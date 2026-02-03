@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NTN Simulation Viewer</title>
+    <style>
+      :root {
+        --bg: #f7f4ef;
+        --ink: #1f1f1f;
+        --grid: #d5cfc6;
+        --planet: #e2d8c6;
+        --l1: rgba(120, 170, 200, 0.12);
+        --l2: rgba(120, 170, 200, 0.18);
+        --l3: rgba(120, 170, 200, 0.24);
+        --sat: #c63d2f;
+        --host: #2f7cc6;
+        --panel: #ffffff;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: var(--ink);
+        background: radial-gradient(
+          circle at 10% 10%,
+          #fff8ef 0,
+          var(--bg) 55%
+        );
+      }
+
+      .wrap {
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) minmax(280px, 360px);
+        gap: 16px;
+        padding: 16px;
+        align-items: start;
+      }
+
+      h1 {
+        margin: 0 0 10px 0;
+        font-size: 22px;
+        letter-spacing: 0.5px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid #e4ded6;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      }
+
+      .controls label {
+        display: block;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+
+      .controls input[type="number"],
+      .controls input[type="text"] {
+        width: 100%;
+        padding: 6px 8px;
+        margin-top: 4px;
+        border: 1px solid #d7d1c8;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+      }
+
+      .controls button {
+        margin-top: 8px;
+        padding: 6px 10px;
+        border: 1px solid #c8c1b7;
+        border-radius: 6px;
+        background: #f2ebe2;
+        cursor: pointer;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      #canvas {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background:
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px
+            40px,
+          linear-gradient(0deg, var(--grid) 1px, transparent 1px) 0 0 / 40px
+            40px,
+          #fffdf9;
+        border: 1px solid #e4ded6;
+        border-radius: 12px;
+      }
+
+      .legend {
+        display: grid;
+        grid-template-columns: 12px 1fr;
+        gap: 8px;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 2px;
+      }
+
+      .status {
+        font-size: 12px;
+        margin-top: 8px;
+      }
+
+      .mono {
+        font-family: "Courier New", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="panel" id="bootBanner" style="grid-column: 1 / -1">
+        Viewer loaded. If you see this, HTML/CSS is active.
+      </div>
+      <div class="panel">
+        <h1>NTN Simulation Viewer</h1>
+        <canvas id="canvas" width="800" height="800"></canvas>
+        <div class="legend">
+          <div class="swatch" style="background: var(--sat)"></div>
+          <div>Satellite</div>
+          <div class="swatch" style="background: var(--host)"></div>
+          <div>Ground station</div>
+        </div>
+        <div class="status" id="status">Load a CSV to begin.</div>
+      </div>
+
+      <div class="panel controls">
+        <label>Load simulation results CSV</label>
+        <input id="fileInput" type="file" accept=".csv" />
+
+        <label>Grid size (l3_area)</label>
+        <input id="gridSize" type="number" value="400" min="1" />
+        <label>Planet side length (size)</label>
+        <input id="planetSize" type="number" value="5" min="1" />
+        <label>Layer sizes (l1_area, l2_area, l3_area)</label>
+          <div class="row">
+            <input id="l1Size" type="number" value="100" min="1" />
+            <input id="l2Size" type="number" value="225" min="1" />
+          </div>
+          <input id="l3Size" type="number" value="400" min="1" />
+
+        <label>Tick</label>
+        <input id="tickRange" type="range" min="0" max="0" value="0" />
+        <div class="row">
+          <button id="prevBtn">Step Back</button>
+          <button id="nextBtn">Step Forward</button>
+        </div>
+
+        <label>Timestamp (seconds)</label>
+        <input id="timeDisplay" type="text" value="0.00" readonly />
+
+        <div class="status mono" id="tickInfo"></div>
+      </div>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const gridSizeInput = document.getElementById("gridSize");
+      const tickRange = document.getElementById("tickRange");
+      const timeDisplay = document.getElementById("timeDisplay");
+      const tickInfo = document.getElementById("tickInfo");
+      const status = document.getElementById("status");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const canvas = document.getElementById("canvas");
+        const l1SizeInput = document.getElementById("l1Size");
+        const l2SizeInput = document.getElementById("l2Size");
+        const l3SizeInput = document.getElementById("l3Size");
+        const planetSizeInput = document.getElementById("planetSize");
+      const ctx = canvas.getContext("2d");
+      status.textContent = "Script loaded. Awaiting CSV.";
+      const css = getComputedStyle(document.documentElement);
+      const colorL1 =
+        css.getPropertyValue("--l1").trim() || "rgba(120,170,200,0.12)";
+      const colorL2 =
+        css.getPropertyValue("--l2").trim() || "rgba(120,170,200,0.18)";
+      const colorL3 =
+        css.getPropertyValue("--l3").trim() || "rgba(120,170,200,0.24)";
+      const colorGrid = css.getPropertyValue("--grid").trim() || "#d5cfc6";
+      const colorSat = css.getPropertyValue("--sat").trim() || "#c63d2f";
+
+      let rows = [];
+      let ticks = [];
+      let gridSize = 225;
+        let l1Size = 100;
+        let l2Size = 225;
+        let l3Size = 400;
+        let planetSize = 5;
+
+      function parseCSVLine(line) {
+        const values = [];
+        let current = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (ch === "," && !inQuotes) {
+            values.push(current);
+            current = "";
+          } else {
+            current += ch;
+          }
+        }
+        values.push(current);
+        return values;
+      }
+
+      function parseCSV(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return [];
+        const headers = parseCSVLine(lines[0]).map((h) => h.trim());
+        return lines.slice(1).map((line) => {
+          const values = parseCSVLine(line);
+          const obj = {};
+          headers.forEach((h, i) => (obj[h] = values[i]));
+          return obj;
+        });
+      }
+
+      function groupByTick(rows) {
+        const map = new Map();
+        rows.forEach((r) => {
+          const tick = Number(r.tick);
+          if (!map.has(tick)) map.set(tick, []);
+          map.get(tick).push(r);
+        });
+        return Array.from(map.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([tick, items]) => ({ tick, items }));
+      }
+
+      function toCanvas(x, y) {
+        const scale = canvas.width / gridSize;
+        const cx = x * scale;
+        const cy = canvas.height - y * scale;
+        return [cx, cy];
+      }
+
+      function distance(a, b) {
+        const dx = a[0] - b[0];
+        const dy = a[1] - b[1];
+        return Math.hypot(dx, dy);
+      }
+
+      function drawGrid() {
+        const step = 40;
+        ctx.strokeStyle = colorGrid;
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= canvas.width; x += step) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= canvas.height; y += step) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+      }
+
+      function drawAtmospheres() {
+        ctx.fillStyle = "#fffdf9";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawGrid();
+        const center = gridSize / 2;
+        const sizes = [l1Size, l2Size, l3Size];
+        const colors = [colorL1, colorL2, colorL3];
+
+        sizes.forEach((size, i) => {
+          const half = size / 2;
+          const left = center - half;
+          const bottom = center - half;
+          const [cx, cy] = toCanvas(left, bottom + size);
+          const scale = canvas.width / gridSize;
+          ctx.fillStyle = colors[i];
+          ctx.fillRect(cx, cy, size * scale, size * scale);
+          ctx.strokeStyle = "#bfb6aa";
+          ctx.strokeRect(cx, cy, size * scale, size * scale);
+          ctx.fillStyle = "#3a3732";
+          ctx.font = "12px 'Courier New', monospace";
+          ctx.fillText(`L${i + 1}=${size}`, cx + 6, cy + 16);
+        });
+      }
+
+      function drawOrbitLines(frame) {
+        const center = [gridSize / 2, gridSize / 2];
+        const byAltitude = new Map();
+        frame.items.forEach((item) => {
+          const key = item.orbit_altitude;
+          if (!byAltitude.has(key)) byAltitude.set(key, []);
+          byAltitude.get(key).push(item);
+        });
+        ctx.strokeStyle = "#7f7a73";
+        ctx.setLineDash([6, 6]);
+          byAltitude.forEach((items) => {
+            const first = items[0];
+            if (!first) return;
+            const altitude = Number(first.orbit_altitude);
+            const size = Math.pow(planetSize + altitude, 2);
+            const r = size / 2;
+            const left = center[0] - r;
+            const bottom = center[1] - r;
+            const [cx, cy] = toCanvas(left, bottom + size);
+            const scale = canvas.width / gridSize;
+            ctx.strokeRect(cx, cy, size * scale, size * scale);
+            ctx.fillStyle = "#3a3732";
+            ctx.font = "12px 'Courier New', monospace";
+            ctx.fillText(`orbit=${size}`, cx + 6, cy + 32);
+          });
+        ctx.setLineDash([]);
+      }
+
+      function drawFrame(frame) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawAtmospheres();
+        drawOrbitLines(frame);
+
+        frame.items.forEach((item) => {
+          const x = Number(item.x);
+          const y = Number(item.y);
+          const [cx, cy] = toCanvas(x, y);
+          ctx.beginPath();
+          ctx.fillStyle = colorSat;
+          ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#1f1f1f";
+          ctx.font = "12px 'Courier New', monospace";
+          ctx.fillText(item.sat_name, cx + 8, cy - 8);
+        });
+      }
+
+      function updateUI(index) {
+        if (!ticks.length) return;
+        const frame = ticks[index];
+        tickRange.value = index;
+        const timeVal = frame.items[0]?.time_s ?? "0.00";
+        timeDisplay.value = timeVal;
+        drawFrame(frame);
+        tickInfo.textContent = `tick=${frame.tick}, sats=${frame.items.length}`;
+        status.textContent = `Viewing tick ${frame.tick}`;
+      }
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          rows = parseCSV(reader.result);
+          ticks = groupByTick(rows);
+          status.textContent = `Loaded rows=${rows.length}, ticks=${ticks.length}`;
+          tickRange.min = 0;
+          tickRange.max = Math.max(0, ticks.length - 1);
+          tickRange.value = 0;
+          updateUI(0);
+        };
+        reader.readAsText(file);
+      });
+
+      tickRange.addEventListener("input", (e) => {
+        updateUI(Number(e.target.value));
+      });
+
+      prevBtn.addEventListener("click", () => {
+        const next = Math.max(0, Number(tickRange.value) - 1);
+        updateUI(next);
+      });
+
+      nextBtn.addEventListener("click", () => {
+        const next = Math.min(ticks.length - 1, Number(tickRange.value) + 1);
+        updateUI(next);
+      });
+
+        gridSizeInput.addEventListener("input", (e) => {
+          const val = Number(e.target.value);
+          if (!Number.isFinite(val) || val <= 0) return;
+          gridSize = val;
+          l3Size = val;
+          l3SizeInput.value = String(val);
+          if (ticks.length) updateUI(Number(tickRange.value));
+          if (!ticks.length) drawAtmospheres();
+        });
+
+      function updateLayerSizes() {
+        const v1 = Number(l1SizeInput.value);
+        const v2 = Number(l2SizeInput.value);
+        const v3 = Number(l3SizeInput.value);
+        if (Number.isFinite(v1) && v1 > 0) l1Size = v1;
+        if (Number.isFinite(v2) && v2 > 0) l2Size = v2;
+          if (Number.isFinite(v3) && v3 > 0) {
+            l3Size = v3;
+            gridSize = v3;
+            gridSizeInput.value = String(v3);
+          }
+          if (ticks.length) updateUI(Number(tickRange.value));
+          if (!ticks.length) drawAtmospheres();
+        }
+
+        l1SizeInput.addEventListener("input", updateLayerSizes);
+        l2SizeInput.addEventListener("input", updateLayerSizes);
+        l3SizeInput.addEventListener("input", updateLayerSizes);
+        planetSizeInput.addEventListener("input", (e) => {
+          const val = Number(e.target.value);
+          if (!Number.isFinite(val) || val <= 0) return;
+          planetSize = val;
+          if (ticks.length) updateUI(Number(tickRange.value));
+          if (!ticks.length) drawAtmospheres();
+        });
+
+      drawAtmospheres();
+    </script>
+  </body>
+</html>

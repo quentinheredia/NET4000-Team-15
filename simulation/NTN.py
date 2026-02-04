@@ -8,7 +8,7 @@ class NTN:
         self.satellites = satellites  # list of Satellite objects
         self.ground_stations = ground_stations  # list of GroundStation objects
         self.planet = planet  # Planet object
-        self.grid_size = planet.l3_area
+        self.grid_size = (planet.l3_area) * 2
     pass
 
 class Planet:
@@ -36,9 +36,28 @@ class Planet:
     pass
 
 class Orbit:
-    def __init__(self, altitude, speed):
-        self.altitude = altitude  # in km
-        self.speed = speed  # in km/s
+    def __init__(self, level):
+
+        self.level = level
+
+        if (self.level == 'L0'):
+            self.speed = 0
+            self.altitude = 0
+        elif (self.level == 'L1'):
+            self.speed = 100
+            self.altitude = 5        
+        elif (self.level == 'L2'):
+            self.speed = 50
+            self.altitude = 10
+        elif (self.level == 'L3'):
+            self.speed = 25  # Assuming same speed as L2 for L3
+            self.altitude = 15
+        else:
+           self.speed = 0  # Default to L0 speed if unknown level
+           self.altitude = 0
+       
+
+        self.level = level  # L0, L1, L2, L3
 
     def update_position(self, time_s, center, half_side, phase_offset):
         # Square orbit, clockwise, constrained to the orbit path.
@@ -70,25 +89,89 @@ class Satellite:
     # switches
     def __init__(self, name, links, orbit):
         self.name = name
-        self.links = links  # list of Link objects
+        self.links = []
+        for i in range(links):
+            self.links.append(Link(name =f"L0/0/{i}",status='up', bandwidth=100, latency=10, type=orbit.level))
+            i+=1
         self.orbit = orbit  # Orbit object
         self.position = [0, 0]  # to be updated based on orbit
+        self.maxConnect = 5  # default max connections, can be overridden
 
+    def __init__(self, name, links, orbit, maxConnect=5):
+        self.name = name
+        self.links = []
+        for i in range(links):
+            self.links.append(Link(name =f"L0/0/{i}",status='up', bandwidth=100, latency=10, type=orbit.level))
+            i+=1
+
+        self.orbit = orbit  # Orbit object
+        self.position = [0, 0]  # to be updated based on orbit
+        self.maxConnect = maxConnect  # maximum number of connections
+
+    def __connect__(self, Sattelite_Self, Satellite_Other):
+        for Link in self.links:
+            if can_see_sat_sat(Sattelite_Self, Satellite_Other):
+                print("Connect from {Sattelite_Self.name} to {Satellite_Other.name} succeeded.")
+                Link.__setConnectedState__(True)
+            else:
+                print("Connect from {Sattelite_Self.name} to {Satellite_Other.name} failed: out of range.")
+                Link.__setConnectedState__(False)
+
+    def __cansee__(self, satellites, host_positions=None):
+        visible = []
+        for other in satellites:
+            if other is self:
+                continue
+            if can_see_sat_sat(self, other):
+                visible.append(other.name)
+        if host_positions:
+            for host_name, host_pos in host_positions.items():
+                if can_see_sat_ground(self, host_pos):
+                    visible.append(host_name)
+        return visible
+
+    
 class GroundStation: 
     # host nodes
     def __init__(self, name, links):
         self.name = name
-        self.links = links  # list of Link objects:
+        self.links = []
+        for i in range(links):
+            self.links.append(Link(name =f"L0/0/{i}",status='up', bandwidth=100, latency=10, type='L0'))
+            i+=1
+
+    def __connect__(self, Sattelite_Self, Satellite_Other):
+        for Link in self.links:
+            if can_see_sat_sat(Sattelite_Self, Satellite_Other):
+                print("Connect from {Sattelite_Self.name} to {Satellite_Other.name} succeeded.")
+                Link.__setConnectedState__(True)
+            else:
+                print("Connect from {Sattelite_Self.name} to {Satellite_Other.name} failed: out of range.")
+                Link.__setConnectedState__(False)
 
 class Link:
-    def __init__(self, state, bandwidth, latency):
-        self.state = state  # 'up' or 'down'
+    def __init__(self, name, status, bandwidth, latency, type):
+        self.name = name
+        self.status = status  # 'up' or 'down'
+        self.isConnected = False  # 'connected' or 'disconnected'
         self.bandwidth = bandwidth  # in Mbps
         self.latency = latency  # in ms
+        self.type = type  # 'L0 = Ground, L1 = Low Earth Orbit, L2 = Medium Earth Orbit, L3 = Geostationary Orbit'
+
+    def __getstatus__(self):
+        return self.status 
+    
+    def __setstatus__(self, state):
+        self.status = state
+
+    def __setConnectedState__(self, isConnected):
+        self.isConnected = isConnected
+
+    def __getConnectedState__(self):
+        return self.isConnected
+
 
 # GLOBAL CONSTANTS
-ORBIT_SPEED = [100,50,25] # Speed in km/s ????????????
-ORBIT_ALTITUDE = [5,10,15] # Altitude in km ????????????
 TICKS_PER_MINUTE = 6
 SIM_DURATION_MINUTES = 1
 SAT_SAT_RANGE_SCALE = 10
@@ -132,47 +215,74 @@ def can_see_sat_ground(sat, ground_pos):
 def orbit_side_for_altitude(planet_size_root, altitude):
     return (planet_size_root + altitude) * (planet_size_root + altitude)
 
-def main():
+def node_info(node, list):
+    if (node == 'satellite'):
+        for i in range(len(list)):
+            satellite = list[i]
+            print(f"Satellite Name: {satellite.name}, Orbit: {satellite.orbit.altitude},")
+            for link in satellite.links:
+                print(f"Link name: {link.name}, Link Type: {link.type} status: {link.status}, bandwidth: {link.bandwidth} Mbps, latency: {link.latency} ms")
+            i+=1
+    elif (node == 'groundstation'):
+        for i in range(len(list)):
+            ground_station = list[i]
+            print(f"Ground Station Name: {ground_station.name}")
+            for link in ground_station.links:
+                print(f"Link name: {link.name}, Link Type: {link.type} status: {link.status}, bandwidth: {link.bandwidth} Mbps, latency: {link.latency} ms")
+            i+=1
+    return 1
 
-    is_running = True  # Control variable for starting/stopping the simulation
 
-    # Example usage
-    orbit1 = Orbit(altitude=ORBIT_ALTITUDE[0], speed=ORBIT_SPEED[0])
-    orbit2 = Orbit(altitude=ORBIT_ALTITUDE[1], speed=ORBIT_SPEED[1])
-    orbit3 = Orbit(altitude=ORBIT_ALTITUDE[2], speed=ORBIT_SPEED[2])
+def load_defaults():
+    
+    orbit0 = Orbit(level='L0')
+    orbit1 = Orbit(level='L1')
+    orbit2 = Orbit(level='L2')
+    orbit3 = Orbit(level='L3')
 
-    host1 = GroundStation(name="Host1", links=[Link(state='up', bandwidth=100, latency=10)])
-    host2 = GroundStation(name="Host2", links=[Link(state='up', bandwidth=100, latency=10)])
+    host1 = GroundStation(name="Host1", links=1)
+    host2 = GroundStation(name="Host2", links=1)
 
-    switch1 = Satellite(name="Sat1", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
-    switch2 = Satellite(name="Sat2", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)   
-    switch3 = Satellite(name="Sat3", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
-    switch4 = Satellite(name="Sat4", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)
-    switch5 = Satellite(name="Sat5", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)
-    switch6 = Satellite(name="Sat6", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit3)
+    switch1 = Satellite(name="Sat1", links=5, orbit=orbit1)
+    switch2 = Satellite(name="Sat2", links=5, orbit=orbit1)   
+    switch3 = Satellite(name="Sat3", links=5, orbit=orbit1)
+    switch4 = Satellite(name="Sat4", links=5, orbit=orbit2)
+    switch5 = Satellite(name="Sat5", links=5, orbit=orbit2)
+    switch6 = Satellite(name="Sat6", links=5, orbit=orbit3)
 
     satellites = [switch1, switch2, switch3, switch4, switch5, switch6]
     ground_stations = [host1, host2]
 
     planet = Planet(size=5, orbits=[orbit1, orbit2, orbit3])
-    ntn = NTN(satellites=satellites, ground_stations=ground_stations, planet=planet)
+
+    return NTN(satellites=satellites, ground_stations=ground_stations, planet=planet)
+
+
+def main():
+
+    SIMULATION = load_defaults() 
+
+    node_info('satellite', SIMULATION.satellites)
+    node_info('groundstation', SIMULATION.ground_stations)
+
+    is_running = True  # Control variable for starting/stopping the simulation
 
     #print(planet.l1_area, planet.l2_area, planet.l3_area)
 
-    host1_pos, host2_pos = place_ground_stations(planet.size_area)
-    host_positions = {host1.name: host1_pos, host2.name: host2_pos}
+    host1_pos, host2_pos = place_ground_stations(SIMULATION.planet.size_area)
+    host_positions = {SIMULATION.ground_stations[0].name: host1_pos, SIMULATION.ground_stations[1].name: host2_pos}
 
     sim_number = get_next_sim_number(CSV_PATH)
     total_ticks = TICKS_PER_MINUTE * SIM_DURATION_MINUTES
     dt = 60 / TICKS_PER_MINUTE
-    center = [ntn.grid_size / 2, ntn.grid_size / 2]
+    center = [SIMULATION.grid_size / 2, SIMULATION.grid_size / 2]
 
     orbit_groups = {}
-    for sat in satellites:
+    for sat in SIMULATION.satellites:
         orbit_groups.setdefault(sat.orbit, []).append(sat)
     orbit_phase = {}
     for orbit, sats in orbit_groups.items():
-        side = orbit_side_for_altitude(planet.size_root, orbit.altitude)
+        side = orbit_side_for_altitude(SIMULATION.planet.size_root, orbit.altitude)
         perimeter = side * 4
         step = perimeter / max(1, len(sats))
         for i, sat in enumerate(sats):
@@ -199,30 +309,21 @@ def main():
             if not is_running:
                 break
             time_s = tick * dt
-            for sat in satellites:
-                orbit_side = orbit_side_for_altitude(planet.size_root, sat.orbit.altitude)
+            for sat in SIMULATION.satellites:
+                orbit_side = orbit_side_for_altitude(SIMULATION.planet.size_root, sat.orbit.altitude)
                 half_side = orbit_side / 2
                 phase = orbit_phase.get(sat.name, 0)
                 sat.position = sat.orbit.update_position(time_s, center, half_side, phase)
-                sat.position[0] = clamp(sat.position[0], 0, ntn.grid_size)
-                sat.position[1] = clamp(sat.position[1], 0, ntn.grid_size)
+                sat.position[0] = clamp(sat.position[0], 0, SIMULATION.grid_size)
+                sat.position[1] = clamp(sat.position[1], 0, SIMULATION.grid_size)
 
-            for sat in satellites:
-                visible = []
-                for other in satellites:
-                    if other is sat:
-                        continue
-                    if can_see_sat_sat(sat, other):
-                        visible.append(other.name)
-                for host_name, host_pos in host_positions.items():
-                    if can_see_sat_ground(sat, host_pos):
-                        visible.append(host_name)
-
-                print(
-                    f"{{{sat.name}, orbit_altitude:{sat.orbit.altitude}, "
-                    f"pos:({sat.position[0]:.2f},{sat.position[1]:.2f}), "
-                    f"can_see:{','.join(visible)}, time_s:{time_s:.2f}}}"
-                )
+            for sat in SIMULATION.satellites:
+                visible = sat.__cansee__(SIMULATION.satellites, host_positions)
+                #print(
+                #    f"{{{sat.name}, orbit_altitude:{sat.orbit.altitude}, "
+                #    f"pos:({sat.position[0]:.2f},{sat.position[1]:.2f}), "
+                #    f"can_see:{','.join(visible)}, time_s:{time_s:.2f}}}"
+                #)
 
                 writer.writerow({
                     "sim_number": sim_number,

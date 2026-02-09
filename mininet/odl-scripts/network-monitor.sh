@@ -252,8 +252,8 @@ while true; do
     echo "╔═══════════════════════════════════════════════════════════════╗"
     echo "║                 OpenDaylight Cluster Monitor                  ║"
     echo "╠═══════════════════════════════════════════════════════════════╣"
-    echo "║ Controller: $CONTROLLER                                       ║"
-    echo "║ Time: $(date)                               ║"
+    echo "║ Controller: $CONTROLLER                                    ║"
+    echo "║ Time: $(date)                         ║"
     echo "╚═══════════════════════════════════════════════════════════════╝"
     echo ""
     

@@ -10,6 +10,41 @@ CSV_FILE = "simulation results.csv"
 Sim_num = 1 
 TICK_INTERVAL = 10 # based on results, we set each tick to be 10 real world seconds 
 
+def check_coverage(sim_ticks):
+    print("\n" + "="*50)
+    print("COVERAGE CHECK — SIM vs LINK_MAP")
+    print("="*50)
+
+    # collect every link the sim tries to use across all ticks
+    sim_links = defaultdict(set)
+    for tick, sat_states in sim_ticks.items():
+        for sat_a, state in sat_states.items():
+            for sat_b in state['can_see']:
+                sim_links[f"{sat_a}-{sat_b}"].add(tick)
+
+    matched = {l: t for l, t in sim_links.items() if l in LINK_MAP}
+    missing = {l: t for l, t in sim_links.items() if l not in LINK_MAP}
+    unused  = {l for l in LINK_MAP if l not in sim_links}
+
+    print(f"\n MATCHED ({len(matched)}) — sim link exists in LINK_MAP:")
+    for link, ticks in sorted(matched.items()):
+        print(f"  {link:25s} ticks: {sorted(ticks)}")
+
+    print(f"\n MISSING ({len(missing)}) — sim uses these but no veth mapped:")
+    for link, ticks in sorted(missing.items()):
+        print(f"  {link:25s} ticks: {sorted(ticks)}")
+
+    print(f"\n UNUSED ({len(unused)}) — in LINK_MAP but sim never activates:")
+    for link in sorted(unused):
+        print(f"  {link}")
+
+    print("\n" + "="*50)
+    if missing:
+        print(f"WARNING: {len(missing)} sim links have no namespace mapping — they will be silently skipped.")
+    else:
+        print("All sim links are covered. Safe to proceed.")
+
+
 # Linking satellite names to interfaces
 
 LINK_MAP = {
@@ -82,7 +117,7 @@ def apply_link_up(link_key, delay_ms, jitter_ms):
     if link_key not in LINK_MAP:
         return 
     ns = LINK_MAP[link_key]["ns"]
-    iface = link_key[link_key]["iface"]
+    iface = LINK_MAP[link_key]["iface"]
 
     # make sure qdisc exists 
     run(f"ip netns exec {ns} tc qdisc add dev {iface} root handle 1: netem 2>/dev/null || true")
@@ -96,12 +131,12 @@ def apply_link_down(link_key):
     if link_key not in LINK_MAP:
         return 
     ns = LINK_MAP[link_key]["ns"]
-    iface = link_key[link_key]["iface"]
+    iface = LINK_MAP[link_key]["iface"]
 
     # same concept as up, but inverse
     run(f"ip netns exec {ns} tc qdisc change dev {iface} root netem"
-        f"delay {delay_ms}ms {jitter_ms}ms distribution normal loss 100%")
-    print(f"{link_key}: delay={delay_ms}ms +- {jitter_ms}ms --> DOWN, NO LINE OF SIGHT")
+        f"delay {ns} {iface} distribution normal loss 100%")
+    print(f"{link_key}: --> DOWN, NO LINE OF SIGHT")
 
 # CSV PARSING 
 
@@ -161,6 +196,8 @@ def main():
     print(f"Loading simulation {Sim_num} from {CSV_FILE}...")
     sim_ticks = load_simulation(CSV_FILE, Sim_num)
     print(f"found {len(sim_ticks)} ticks: {list(sim_ticks.keys())}")
+
+    check_coverage(sim_ticks)
 
     for tick_num, sat_states in sim_ticks.items():
         apply_tick(tick_num, sat_states)

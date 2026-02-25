@@ -91,7 +91,7 @@ ORBIT_SPEED = [100,50,25] # Speed in km/s ????????????
 ORBIT_ALTITUDE = [5,10,15] # Altitude in km ????????????
 TICKS_PER_MINUTE = 6
 SIM_DURATION_MINUTES = 1
-SAT_SAT_RANGE_SCALE = 10
+SAT_SAT_RANGE_SCALE = 5 # Changing scale to limit connection 
 SAT_GROUND_RANGE_SCALE = 10
 CSV_PATH = "simulation results.csv"
 
@@ -115,19 +115,122 @@ def get_next_sim_number(csv_path):
     return max_sim + 1
 
 def place_ground_stations(planet_size_area):
-    x1 = random.uniform(0, planet_size_area)
+    """ x1 = random.uniform(0, planet_size_area)
     y1 = random.uniform(0, planet_size_area)
     x2 = clamp(planet_size_area - x1, 0, planet_size_area)
     y2 = clamp(planet_size_area - y1, 0, planet_size_area)
-    return [x1, y1], [x2, y2]
+    return [x1, y1], [x2, y2] """
+
+    h1_pos = [100, 150]
+    h2_post = [300, 250]
+    return h1_pos, h2_post
 
 def can_see_sat_sat(sat_a, sat_b):
-    max_range = (sat_a.orbit.altitude + sat_b.orbit.altitude) * SAT_SAT_RANGE_SCALE
-    return distance(sat_a.position, sat_b.position) <= max_range
+    # Get orbital layers based on altitude
+    def get_layer(alt):
+        if alt == 5:
+            return 1  # Low orbit
+        elif alt == 10:
+            return 2  # Medium orbit
+        else:  # alt == 15
+            return 3  # High orbit
+    
+    layer_a = get_layer(sat_a.orbit.altitude)
+    layer_b = get_layer(sat_b.orbit.altitude)
+    
+    # Calculate layer difference
+    layer_diff = abs(layer_a - layer_b)
+    
+    # ENFORCE YOUR ACTUAL MESH TOPOLOGY:
+    
+    # Case 1: Same layer connections
+    if layer_diff == 0:
+        if layer_a == 2:  # Medium orbit (Sat2, Sat3)
+            # Allow Sat2-Sat3 connection (they are connected in your network)
+            names = {sat_a.name, sat_b.name}
+            if "Sat2" in names and "Sat3" in names:
+                max_range = 200
+                return distance(sat_a.position, sat_b.position) <= max_range
+            else:
+                return False
+                
+        elif layer_a == 1:  # Low orbit (Sat4, Sat5, Sat6)
+            # Allow mesh connections between low orbit satellites
+            names = {sat_a.name, sat_b.name}
+            # Allow Sat4-Sat5 and Sat5-Sat6 (your actual connections)
+            if ("Sat4" in names and "Sat5" in names) or ("Sat5" in names and "Sat6" in names):
+                max_range = 180
+                return distance(sat_a.position, sat_b.position) <= max_range
+            # Do NOT allow Sat4-Sat6 direct connection
+            elif "Sat4" in names and "Sat6" in names:
+                return False
+            else:
+                return False
+                
+        elif layer_a == 3:  # High orbit (only Sat1)
+            return False  # No same-layer connections in high orbit
+    
+    # Case 2: Adjacent layers (3-2 or 2-1)
+    elif layer_diff == 1:
+        # High-to-Medium (3-2): Allow Sat1-Sat2 and Sat1-Sat3
+        if (layer_a == 3 and layer_b == 2) or (layer_a == 2 and layer_b == 3):
+            names = {sat_a.name, sat_b.name}
+            if "Sat1" in names and ("Sat2" in names or "Sat3" in names):
+                max_range = 250
+                return distance(sat_a.position, sat_b.position) <= max_range
+            else:
+                return False
+        
+        # Medium-to-Low (2-1): Allow ALL possible connections
+        # Your network has R2 connected to R4,R5 and R3 connected to R5,R6
+        elif (layer_a == 2 and layer_b == 1) or (layer_a == 1 and layer_b == 2):
+            names = {sat_a.name, sat_b.name}
+            
+            # Allow all medium-low combinations that exist in your network
+            # Sat2 with Sat4 or Sat5
+            if "Sat2" in names and ("Sat4" in names or "Sat5" in names):
+                max_range = 220
+                return distance(sat_a.position, sat_b.position) <= max_range
+            
+            # Sat3 with Sat5 or Sat6
+            elif "Sat3" in names and ("Sat5" in names or "Sat6" in names):
+                max_range = 220
+                return distance(sat_a.position, sat_b.position) <= max_range
+            
+            # Do NOT allow Sat2-Sat6 or Sat3-Sat4 (these don't exist in your network)
+            else:
+                return False
+    
+    # Case 3: Non-adjacent layers (3-1)
+    else:  # layer_diff == 2
+        return False  # Never allow high orbit to connect to low orbit
+    
+    return False
 
-def can_see_sat_ground(sat, ground_pos):
-    max_range = sat.orbit.altitude * SAT_GROUND_RANGE_SCALE
-    return distance(sat.position, ground_pos) <= max_range
+def can_see_sat_ground(sat, ground_pos, host_positions, ground_name):
+    # Only specific low-orbit satellites can see specific ground stations
+    if sat.orbit.altitude != 5:  # Only altitude 5 satellites
+        return False
+    
+    # Sat4 can only see Host1
+    if sat.name == "Sat4" and ground_name == "Host1":
+        max_range = 150
+        return distance(sat.position, ground_pos) <= max_range
+    
+    # Sat6 can only see Host2
+    elif sat.name == "Sat6" and ground_name == "Host2":
+        max_range = 150
+        return distance(sat.position, ground_pos) <= max_range
+    
+    # Sat5 can never see any ground station
+    # Any other combination is invalid
+    return False
+
+def place_ground_stations(planet_size_root):
+    # Place ground stations at strategic locations
+    h1_pos = [100, 150]  # Adjusted these values
+    h2_pos = [300, 250]  # based on where satellites orbit
+    return h1_pos, h2_pos
 
 def orbit_side_for_altitude(planet_size_root, altitude):
     return (planet_size_root + altitude) * (planet_size_root + altitude)
@@ -144,22 +247,23 @@ def main():
     host1 = GroundStation(name="Host1", links=[Link(state='up', bandwidth=100, latency=10)])
     host2 = GroundStation(name="Host2", links=[Link(state='up', bandwidth=100, latency=10)])
 
-    switch1 = Satellite(name="Sat1", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
-    switch2 = Satellite(name="Sat2", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)   
-    switch3 = Satellite(name="Sat3", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
-    switch4 = Satellite(name="Sat4", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)
-    switch5 = Satellite(name="Sat5", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)
-    switch6 = Satellite(name="Sat6", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit3)
+    switch1 = Satellite(name="Sat1", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit3)
+    switch2 = Satellite(name="Sat2", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)   
+    switch3 = Satellite(name="Sat3", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit2)
+    switch4 = Satellite(name="Sat4", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
+    switch5 = Satellite(name="Sat5", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
+    switch6 = Satellite(name="Sat6", links=[Link(state='up', bandwidth=100, latency=10)], orbit=orbit1)
 
     satellites = [switch1, switch2, switch3, switch4, switch5, switch6]
     ground_stations = [host1, host2]
 
-    planet = Planet(size=5, orbits=[orbit1, orbit2, orbit3])
+    planet = Planet(size=3, orbits=[orbit1, orbit2, orbit3])
     ntn = NTN(satellites=satellites, ground_stations=ground_stations, planet=planet)
 
     #print(planet.l1_area, planet.l2_area, planet.l3_area)
 
-    host1_pos, host2_pos = place_ground_stations(planet.size_area)
+    # host1_pos, host2_pos = place_ground_stations(planet.size_area)
+    host1_pos, host2_pos = place_ground_stations(planet.size_root) # Changed to pass root and not the area 
     host_positions = {host1.name: host1_pos, host2.name: host2_pos}
 
     sim_number = get_next_sim_number(CSV_PATH)
@@ -215,7 +319,7 @@ def main():
                     if can_see_sat_sat(sat, other):
                         visible.append(other.name)
                 for host_name, host_pos in host_positions.items():
-                    if can_see_sat_ground(sat, host_pos):
+                    if can_see_sat_ground(sat, host_pos, host_positions, host_name):
                         visible.append(host_name)
 
                 print(
@@ -235,12 +339,6 @@ def main():
                     "y": f"{sat.position[1]:.6f}",
                     "can_see": ",".join(visible),
                 })
-
-
-    
-    
-
-
 
 
 

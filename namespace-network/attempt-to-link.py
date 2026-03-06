@@ -34,10 +34,10 @@ LINK_MAP = {
     # R2 (Sat2) connections
     "Sat2-Sat4": {"ns": "r2", "iface": "v-r2-r4"},
     "Sat2-Sat5": {"ns": "r2", "iface": "v-r2-r5"},
-    "Sat2-Sat3": {"ns": "r2", "iface": "v-r2-r3"},  # You have this link!
+    "Sat2-Sat3": {"ns": "r2", "iface": "v-r2-r3"}, 
     "Sat4-Sat2": {"ns": "r4", "iface": "v-r4-r2"},
     "Sat5-Sat2": {"ns": "r5", "iface": "v-r5-r2"},
-    "Sat3-Sat2": {"ns": "r3", "iface": "v-r3-r2"},  # You have this link!
+    "Sat3-Sat2": {"ns": "r3", "iface": "v-r3-r2"}, 
     
     # R3 (Sat3) connections
     "Sat3-Sat5": {"ns": "r3", "iface": "v-r3-r5"},
@@ -47,19 +47,19 @@ LINK_MAP = {
     
     # R4 (Sat4) connections
     "Sat4-Sat2": {"ns": "r4", "iface": "v-r4-r2"},
-    "Sat4-Sat5": {"ns": "r4", "iface": "v-r4-r5"},  # You have this link!
+    "Sat4-Sat5": {"ns": "r4", "iface": "v-r4-r5"}, 
     "Sat4-Host1": {"ns": "r4", "iface": "v-r4-h1"},
-    "Sat5-Sat4": {"ns": "r5", "iface": "v-r5-r4"},  # You have this link!
+    "Sat5-Sat4": {"ns": "r5", "iface": "v-r5-r4"}, 
     
     # R5 (Sat5) connections
     "Sat5-Sat2": {"ns": "r5", "iface": "v-r5-r2"},
     "Sat5-Sat3": {"ns": "r5", "iface": "v-r5-r3"},
     "Sat5-Sat4": {"ns": "r5", "iface": "v-r5-r4"},
-    "Sat5-Sat6": {"ns": "r5", "iface": "v-r5-r6"},  # You have this link!
+    "Sat5-Sat6": {"ns": "r5", "iface": "v-r5-r6"}, 
     
     # R6 (Sat6) connections
     "Sat6-Sat3": {"ns": "r6", "iface": "v-r6-r3"},
-    "Sat6-Sat5": {"ns": "r6", "iface": "v-r6-r5"},  # You have this link!
+    "Sat6-Sat5": {"ns": "r6", "iface": "v-r6-r5"}, 
     "Sat6-Host2": {"ns": "r6", "iface": "v-r6-h2"},
     
     # Host connections
@@ -96,7 +96,7 @@ def compute_jitter(delay_ms):
 
 # Applying these to actual namespace using TC NETEM
 
-DRY_RUN = True # Flip to false for actual implementation, using this to test 
+DRY_RUN = False # Flip to false for actual implementation, using this to test **UPDATE IT WORKS**
 
 def run(cmd, quiet=False):
     # Logic to prevent it from running

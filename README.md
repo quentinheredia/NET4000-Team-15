@@ -1,6 +1,7 @@
 # NET4000-Team-15
 
 **Team Members:**
+
 - Ishani Singh
 - Nicki Karimi
 - Quentin Heredia
@@ -25,18 +26,19 @@
 
 ## Architecture Overview
 
-The project is split into three main components that work together in a pipeline:
+The project is split into four main components that work together in a pipeline:
 
 ```
-[simulation/NTN.py]  →  [simulation results.csv]  →  [namespace-network/attempt-to-link.py]
-   Satellite orbit            Tick-by-tick              Apply delays & link
-   simulation                position + visibility      states to live namespaces
+[simulation/NTN.py]  →  [simulation results.csv]  →  [ntn_mlm.py]  →  [namespace-network/attempt-to-link.py]
+   Satellite orbit            Tick-by-tick              Train & save      Apply predicted delays &
+   simulation                position + visibility      delay model       link states to live namespaces
                              data
 ```
 
 1. **`simulation/`** — Models a satellite constellation moving through orbits, computing visibility and position per tick, and writing results to CSV.
 2. **`simulation results.csv`** — The data bridge between the simulation and the live network. Each row captures one satellite's state at one point in time.
-3. **`namespace-network/`** — Sets up a real emulated network using Linux namespaces and FRR/OSPF, then replays the simulation data by applying delays and link-state changes to the live topology.
+3. **`ntn_mlm.py`** — Generates rich training data from the orbit simulation, trains a Gradient Boosted regression model to predict one-tick-ahead link delay, and exposes a `predict_next_tick()` function for integration into the routing pipeline.
+4. **`namespace-network/`** — Sets up a real emulated network using Linux namespaces and FRR/OSPF, then replays the simulation data by applying delays and link-state changes to the live topology.
 
 ---
 
@@ -58,34 +60,35 @@ This Bash script creates the entire network topology from scratch using Linux ne
 
 3. **veth link wiring** — Connects namespaces using virtual Ethernet (`veth`) pairs. Each pair creates a point-to-point link between two namespaces. The topology mirrors a layered satellite mesh:
 
-    ```
-           R1          ← High orbit (Sat1)
-        R2    R3       ← Medium orbit (Sat2, Sat3)
-     R4    R5    R6    ← Low orbit (Sat4, Sat5, Sat6)
-     H1              H2
-    ```
+   ```
+          R1          ← High orbit (Sat1)
+       R2    R3       ← Medium orbit (Sat2, Sat3)
+    R4    R5    R6    ← Low orbit (Sat4, Sat5, Sat6)
+    H1              H2
+   ```
 
-    Full link list and IP scheme:
+   Full link list and IP scheme:
 
-    | Link         | Interface pair          | Subnet          |
-    |--------------|-------------------------|-----------------|
-    | H1 ↔ R4     | v-h1-r4 / v-r4-h1       | 10.0.4.0/24     |
-    | H2 ↔ R6     | v-h2-r6 / v-r6-h2       | 10.0.6.0/24     |
-    | R4 ↔ R2     | v-r4-r2 / v-r2-r4       | 10.4.2.0/24     |
-    | R5 ↔ R2     | v-r5-r2 / v-r2-r5       | 10.5.2.0/24     |
-    | R5 ↔ R3     | v-r5-r3 / v-r3-r5       | 10.5.3.0/24     |
-    | R6 ↔ R3     | v-r6-r3 / v-r3-r6       | 10.6.3.0/24     |
-    | R2 ↔ R1     | v-r2-r1 / v-r1-r2       | 10.2.1.0/24     |
-    | R3 ↔ R1     | v-r3-r1 / v-r1-r3       | 10.3.1.0/24     |
-    | R4 ↔ R5     | v-r4-r5 / v-r5-r4       | 10.4.5.0/24     |
-    | R5 ↔ R6     | v-r5-r6 / v-r6-r5       | 10.5.6.0/24     |
-    | R2 ↔ R3     | v-r2-r3 / v-r3-r2       | 10.2.3.0/24     |
+   | Link    | Interface pair    | Subnet      |
+   | ------- | ----------------- | ----------- |
+   | H1 ↔ R4 | v-h1-r4 / v-r4-h1 | 10.0.4.0/24 |
+   | H2 ↔ R6 | v-h2-r6 / v-r6-h2 | 10.0.6.0/24 |
+   | R4 ↔ R2 | v-r4-r2 / v-r2-r4 | 10.4.2.0/24 |
+   | R5 ↔ R2 | v-r5-r2 / v-r2-r5 | 10.5.2.0/24 |
+   | R5 ↔ R3 | v-r5-r3 / v-r3-r5 | 10.5.3.0/24 |
+   | R6 ↔ R3 | v-r6-r3 / v-r3-r6 | 10.6.3.0/24 |
+   | R2 ↔ R1 | v-r2-r1 / v-r1-r2 | 10.2.1.0/24 |
+   | R3 ↔ R1 | v-r3-r1 / v-r1-r3 | 10.3.1.0/24 |
+   | R4 ↔ R5 | v-r4-r5 / v-r5-r4 | 10.4.5.0/24 |
+   | R5 ↔ R6 | v-r5-r6 / v-r6-r5 | 10.5.6.0/24 |
+   | R2 ↔ R3 | v-r2-r3 / v-r3-r2 | 10.2.3.0/24 |
 
 4. **FRR/OSPF configuration** — Writes an `frr.conf` for each router namespace and starts `zebra` and `ospfd` daemons inside each namespace. All inter-router interfaces participate in OSPF area 0. Host-facing interfaces (`v-r4-h1`, `v-r6-h2`) are set to passive so they are advertised into OSPF but do not form adjacencies with hosts.
 
 5. **Convergence wait** — Sleeps 30 seconds after starting FRR to allow OSPF to fully converge before the topology is used.
 
 **Usage:**
+
 ```bash
 sudo bash new-net-namespace.sh
 ```
@@ -99,12 +102,14 @@ sudo bash new-net-namespace.sh
 Contains the IP addressing scheme, hop-by-hop ping commands for verifying connectivity, and useful FRR vtysh commands for inspecting routing state. Also documents the `frr-rX` shell aliases (added to `~/.bashrc`) that simplify accessing the FRR CLI for each router namespace.
 
 **Key aliases (defined in `~/.bashrc`):**
+
 ```bash
 alias frr-r1='sudo ip netns exec r1 /usr/lib/frr/vtysh -N r1'
 # ... r2 through r6 follow the same pattern
 ```
 
 **Changing OSPF link costs** (to influence routing decisions):
+
 ```bash
 frr-rX -c "configure terminal" -c "interface v-rX-rY" -c "ip ospf cost Z" -c "end" -c "write memory"
 ```
@@ -136,6 +141,7 @@ This Python script reads simulation tick data from the CSV and dynamically appli
 > **Note:** `DRY_RUN = True` is set by default. In this mode, `tc` commands are printed but not executed. Set `DRY_RUN = False` to apply changes to the live network.
 
 **Usage:**
+
 ```bash
 # Ensure new-net-namespace.sh has been run first
 sudo python3 attempt-to-link.py
@@ -166,7 +172,7 @@ This folder contains the Python simulation that models a simplified satellite co
 **Satellite layout:**
 
 | Satellite | Namespace | Orbit layer | Altitude |
-|-----------|-----------|-------------|----------|
+| --------- | --------- | ----------- | -------- |
 | Sat1      | r1        | High (L3)   | 15 km    |
 | Sat2      | r2        | Medium (L2) | 10 km    |
 | Sat3      | r3        | Medium (L2) | 10 km    |
@@ -186,18 +192,20 @@ Each tick advances all satellite positions along their orbits, then evaluates vi
 
 **Global constants (tunable):**
 
-| Constant              | Default | Description                          |
-|-----------------------|---------|--------------------------------------|
-| `ORBIT_SPEED`         | [100, 50, 25] km/s | Speed per orbital layer  |
-| `ORBIT_ALTITUDE`      | [5, 10, 15] km | Altitude per layer          |
-| `TICKS_PER_MINUTE`    | 6       | Time resolution of the simulation    |
-| `SIM_DURATION_MINUTES`| 1       | Total simulation duration            |
-| `CSV_PATH`            | `"simulation results.csv"` | Output file     |
+| Constant               | Default                    | Description                       |
+| ---------------------- | -------------------------- | --------------------------------- |
+| `ORBIT_SPEED`          | [100, 50, 25] km/s         | Speed per orbital layer           |
+| `ORBIT_ALTITUDE`       | [5, 10, 15] km             | Altitude per layer                |
+| `TICKS_PER_MINUTE`     | 6                          | Time resolution of the simulation |
+| `SIM_DURATION_MINUTES` | 1                          | Total simulation duration         |
+| `CSV_PATH`             | `"simulation results.csv"` | Output file                       |
 
 **Usage:**
+
 ```bash
 python3 NTN.py
 ```
+
 Each run appends a new simulation (with an auto-incremented `sim_number`) to the CSV.
 
 ---
@@ -208,23 +216,91 @@ An earlier version of the simulation that used simple circular orbits (via `math
 
 ---
 
+### `ntn_mlm.py` — Link Delay Prediction Model
+
+This script implements the machine learning component of the delay-predictive routing pipeline. It generates its own training data by replaying the orbit simulation with varied parameters, trains a Gradient Boosted Decision Tree regressor entirely in NumPy (no scikit-learn required), and saves a model that can predict one-tick-ahead link delay for all 9 satellite links.
+
+**How it works:**
+
+1. **Data generation** — Rather than relying on the limited rows in `simulation results.csv`, the script re-runs the orbit simulation internally across 30 randomized scenarios (±15% speed variation) for 120 ticks each, producing ~20,000 per-link, per-tick training samples. This variation is necessary because the base orbit is deterministic — plain reruns of `NTN.py` would yield identical positions.
+
+2. **Feature engineering** — For each (link, tick) pair the script extracts 23 features describing the current state of both satellite endpoints: absolute positions (x, y, altitude), relative geometry (distance, angle, Δx/Δy), per-satellite velocity components, approach speed, current link up/down state, current delay, and an encoded link-type label (L3–L2, L2–L2, L2–L1, L1–L1).
+
+3. **Model** — A custom Gradient Boosted Decision Tree regressor built on NumPy. Shallow trees (depth 5) are fitted sequentially to the MSE residuals with a learning rate of 0.08 and 80% row sub-sampling per tree — matching the behaviour of standard gradient boosting libraries.
+
+4. **Evaluation** — Train/test split is by scenario (last 20% held out) to prevent data leakage. Achieved metrics on the held-out set:
+
+   | Metric | Test Value |
+   | ------ | ---------- |
+   | MAE    | 0.56 ms    |
+   | RMSE   | 0.78 ms    |
+   | R²     | 0.9983     |
+
+   The dominant features are the relative velocity components (`rel_dy`, `rel_dx`, `approach`), which encode how fast satellites are converging or diverging — physically the most informative signal for near-future delay.
+
+5. **Prediction interface** — `predict_next_tick(sat_states, model, tick)` accepts the same `sat_states` dict that `attempt-to-link.py` already builds from `load_simulation()`, and returns a `{"SatA-SatB": delay_ms}` dict for all 9 links.
+
+6. **Model persistence** — The trained model is saved to `ntn_delay_model.pkl` (~300 KB) using `pickle` for fast reload at inference time.
+
+**CLI options:**
+
+| Flag            | Default | Description                                |
+| --------------- | ------- | ------------------------------------------ |
+| `--scenarios N` | 30      | Number of simulation scenarios to generate |
+| `--ticks N`     | 120     | Ticks per scenario                         |
+| `--trees N`     | 100     | Number of boosting estimators              |
+| `--depth N`     | 5       | Max tree depth                             |
+| `--lr F`        | 0.08    | Gradient boosting learning rate            |
+| `--predict`     | —       | Load saved model and run demo inference    |
+
+**Usage:**
+
+```bash
+# Train the model (generates data, trains, evaluates, saves ntn_delay_model.pkl)
+python ntn_mlm.py
+
+# Larger dataset / more estimators for better accuracy
+python ntn_mlm.py --scenarios 50 --ticks 200 --trees 150
+
+# Run demo inference using the saved model
+python ntn_mlm.py --predict
+```
+
+**Integrating predictions into `attempt-to-link.py`:**
+
+```python
+from ntn_mlm import load, predict_next_tick
+
+bundle = load()          # loads ntn_delay_model.pkl
+model  = bundle["model"]
+
+# Inside apply_tick(), after loading sat_states for the current tick:
+predicted_delays = predict_next_tick(sat_states, model, tick=current_tick)
+# predicted_delays = {"Sat1-Sat2": 109.6, "Sat4-Sat5": 44.1, ...}
+
+# Use predicted_delays to pre-emptively adjust OSPF costs for the next tick
+# before tc netem applies the actual conditions.
+```
+
+---
+
 ### `simulation results.csv` — Simulation Output Data
 
 The CSV is the data interface between the simulation and the network replay script. Each row represents one satellite's state at one simulation tick.
 
 **Schema:**
 
-| Column           | Type    | Description                                                      |
-|------------------|---------|------------------------------------------------------------------|
-| `sim_number`     | Integer | Identifies which simulation run produced this row                |
-| `time_s`         | Float   | Elapsed simulation time in seconds                               |
-| `tick`           | Integer | Tick index (0-based); each tick is 10 seconds of real time       |
-| `sat_name`       | String  | Satellite name (`Sat1`–`Sat6`)                                   |
-| `orbit_altitude` | Integer | Orbital altitude in km (5, 10, or 15)                            |
-| `orbit_speed`    | Integer | Orbital speed in km/s                                            |
-| `x`              | Float   | Satellite X position on the simulation grid                      |
-| `y`              | Float   | Satellite Y position on the simulation grid                      |
-| `can_see`        | String  | Comma-separated list of satellites/hosts visible from this node  |
+| Column           | Type    | Description                                                     |
+| ---------------- | ------- | --------------------------------------------------------------- |
+| `sim_number`     | Integer | Identifies which simulation run produced this row               |
+| `time_s`         | Float   | Elapsed simulation time in seconds                              |
+| `tick`           | Integer | Tick index (0-based); each tick is 10 seconds of real time      |
+| `sat_name`       | String  | Satellite name (`Sat1`–`Sat6`)                                  |
+| `orbit_altitude` | Integer | Orbital altitude in km (5, 10, or 15)                           |
+| `orbit_speed`    | Integer | Orbital speed in km/s                                           |
+| `x`              | Float   | Satellite X position on the simulation grid                     |
+| `y`              | Float   | Satellite Y position on the simulation grid                     |
+| `can_see`        | String  | Comma-separated list of satellites/hosts visible from this node |
 
 The `can_see` column is what `attempt-to-link.py` reads to determine which links should be UP or DOWN at each tick, and the `x`, `y`, and `orbit_altitude` columns are used to compute the delay to apply to active links.
 
@@ -235,6 +311,7 @@ The `can_see` column is what `attempt-to-link.py` reads to determine which links
 A self-contained HTML/JS tool for visually inspecting simulation CSV output in a browser. No server required — open the file directly.
 
 **Features:**
+
 - Load a `simulation results.csv` file via the file picker
 - Visualizes the square planet grid with the three orbital layers (L1, L2, L3) drawn as nested squares
 - Plots each satellite's position at the selected tick on a 2D canvas
@@ -242,12 +319,29 @@ A self-contained HTML/JS tool for visually inspecting simulation CSV output in a
 - Configurable grid size and layer dimensions to match the values used when the simulation was run
 
 **Usage:**
+
 1. Run `NTN.py` to generate a `simulation results.csv`
 2. Open `simulation_viewer.html` in a browser
 3. Click "Load simulation results CSV" and select the file
 4. Use the slider or step buttons to walk through each tick
 
----
+#### `ntn_dashboard.py` - Visual Delay & Link status
+
+# Print formatted table for every tick
+
+python3 ntn_dashboard.py --cli
+
+# Single tick snapshot
+
+python3 ntn_dashboard.py --cli --tick 3
+
+# Filter to one sim run + one tick
+
+python3 ntn_dashboard.py --cli --sim 1 --tick 3
+
+# Open the full interactive GUI (matplotlib)
+
+## python3 ntn_dashboard.py
 
 ## End-to-End Workflow
 
@@ -260,8 +354,14 @@ A self-contained HTML/JS tool for visually inspecting simulation CSV output in a
 
 3. (Optional) Open simulation_viewer.html in browser to verify simulation visually
 
-4. sudo python3 namespace-network/attempt-to-link.py
+4. python3 ntn_mlm.py
+      └─ Generates training data internally (no extra CSV runs needed)
+      └─ Trains Gradient Boosted regressor on ~20,000 link-tick samples
+      └─ Evaluates model (MAE, RMSE, R²) and saves ntn_delay_model.pkl
+
+5. sudo python3 namespace-network/attempt-to-link.py
       └─ Reads CSV, replays tick-by-tick, applies tc netem delay/loss to namespaces
+      └─ (Optional) import predict_next_tick from ntn_mlm to enable predictive routing
       └─ Choose manual or automatic mode
       └─ Topology is reset to clean state on exit
 ```
@@ -272,9 +372,11 @@ A self-contained HTML/JS tool for visually inspecting simulation CSV output in a
 
 - Linux host with root/sudo access
 - [FRR](https://frrouting.org/) installed (`zebra`, `ospfd`, `vtysh` in `/usr/lib/frr`)
-- Python 3.x
+- Python 3.x with `numpy` and `pandas` (`pip install numpy pandas`)
 - `iproute2` with `tc` and `netem` support (`sch_netem` kernel module)
 - `traceroute` (optional, for path verification)
+
+> **Note:** `ntn_mlm.py` has no dependency on scikit-learn or any other ML library — it implements Gradient Boosted Decision Trees from scratch using only NumPy.
 
 ---
 

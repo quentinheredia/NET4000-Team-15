@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NTN Dashboard</title>
+<style>
+/* ── reset & base ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0d1117;
+  --panel:   #161b22;
+  --border:  #30363d;
+  --text:    #c9d1d9;
+  --muted:   #8b949e;
+  --accent:  #58a6ff;
+  --green:   #3fb950;
+  --red:     #f85149;
+  --yellow:  #d29922;
+  --purple:  #a371f7;
+  --gold:    #ffd700;
+  --lblue:   #4fc3f7;
+  --lpurple: #ce93d8;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  padding: 0 0 20px;
+}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color .15s, background .15s;
+}
+.btn:hover { background: #21262d; border-color: var(--accent); }
+.btn-primary { border-color: var(--accent); color: var(--accent); }
+
+/* file-load banner */
+#load-banner {
+  margin: 32px auto;
+  max-width: 480px;
+  text-align: center;
+  padding: 40px 20px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+}
+#load-banner h2 { color: var(--text); margin-bottom: 10px; font-size: 15px; }
+#load-banner p  { font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
+#file-input { display: none; }
+
+/* ── main grid ──────────────────────────────────────────────────────────── */
+#dashboard { display: none; padding: 16px 20px; }
+
+/* KPI row */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.kpi-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-top-width: 3px;
+}
+.kpi-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; }
+.kpi-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.kpi-unit  { font-size: 10px; color: var(--muted); }
+
+/* chart rows */
+.chart-row {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.chart-row.top { grid-template-columns: 2.6fr 1fr; }
+.chart-row.bot { grid-template-columns: 1.9fr 1fr; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+canvas { width: 100% !important; }
+
+/* tick slider row */
+.controls-row {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.controls-row label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+input[type=range] {
+  flex: 1;
+  min-width: 120px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tick-display {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* link legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-swatch { width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ── header ────────────────────────────────────────────────────────────── -->
+<header>
+  <h1>⬡ NTN Dashboard</h1>
+  <div class="header-controls">
+    <label style="color:var(--muted);font-size:12px">Simulation run:</label>
+    <select id="sim-select"></select>
+    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+      Load CSV
+    </button>
+    <input type="file" id="file-input" accept=".csv">
+  </div>
+</header>
+
+<!-- ── load banner ───────────────────────────────────────────────────────── -->
+<div id="load-banner">
+  <h2>Load simulation data</h2>
+  <p>Select your <code>simulation results.csv</code> file to visualise link delays,
+     satellite positions, and network state across every simulation tick.</p>
+  <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+    Choose File…
+  </button>
+</div>
+
+<!-- ── dashboard ─────────────────────────────────────────────────────────── -->
+<div id="dashboard">
+
+  <!-- KPI cards -->
+  <div class="kpi-row">
+    <div class="kpi-card" id="kpi-sim"    style="border-top-color:var(--accent)">
+      <span class="kpi-label">Simulation Run</span>
+      <span class="kpi-value" style="color:var(--accent)" id="v-sim">—</span>
+      <span class="kpi-unit"  id="u-sim">—</span>
+    </div>
+    <div class="kpi-card" id="kpi-tick"   style="border-top-color:var(--yellow)">
+      <span class="kpi-label">Current Tick</span>
+      <span class="kpi-value" style="color:var(--yellow)" id="v-tick">—</span>
+      <span class="kpi-unit"  id="u-tick">—</span>
+    </div>
+    <div class="kpi-card" id="kpi-links"  style="border-top-color:var(--green)">
+      <span class="kpi-label">Active Links</span>
+      <span class="kpi-value" style="color:var(--green)" id="v-links">—</span>
+      <span class="kpi-unit">links currently up</span>
+    </div>
+    <div class="kpi-card" id="kpi-delay"  style="border-top-color:var(--purple)">
+      <span class="kpi-label">Avg Link Delay</span>
+      <span class="kpi-value" style="color:var(--purple)" id="v-delay">—</span>
+      <span class="kpi-unit">ms (active only)</span>
+    </div>
+  </div>
+
+  <!-- Row 1: delay line + avg bar -->
+  <div class="chart-row top">
+    <div class="panel">
+      <span class="panel-title">Link Delay over Time</span>
+      <canvas id="c-line" height="180"></canvas>
+      <div class="legend" id="legend-line"></div>
+    </div>
+    <div class="panel">
+      <span class="panel-title">Avg Delay per Link</span>
+      <canvas id="c-bar" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- Row 2: timeline + sat map -->
+  <div class="chart-row bot">
+    <div class="panel">
+      <span class="panel-title">Link Up / Down Timeline</span>
+      <canvas id="c-timeline" height="200"></canvas>
+    </div>
+    <div class="panel">
+      <span class="panel-title">Satellite Position Map</span>
+      <canvas id="c-map" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Tick controls -->
+  <div class="controls-row">
+    <label>Tick</label>
+    <input type="range" id="tick-slider" min="0" max="0" step="1" value="0">
+    <span class="tick-display" id="tick-label">Tick 0</span>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════════════════════
+const TOPOLOGY = [
+  ['Sat1','Sat2'],['Sat1','Sat3'],
+  ['Sat2','Sat3'],
+  ['Sat2','Sat4'],['Sat2','Sat5'],
+  ['Sat3','Sat5'],['Sat3','Sat6'],
+  ['Sat4','Sat5'],
+  ['Sat5','Sat6'],
+];
+const ALL_LINKS   = TOPOLOGY.map(([a,b]) => `${a}-${b}`);
+const LINK_LAYER  = {
+  'Sat1-Sat2':'L3↔L2','Sat1-Sat3':'L3↔L2',
+  'Sat2-Sat3':'L2↔L2',
+  'Sat2-Sat4':'L2↔L1','Sat2-Sat5':'L2↔L1',
+  'Sat3-Sat5':'L2↔L1','Sat3-Sat6':'L2↔L1',
+  'Sat4-Sat5':'L1↔L1','Sat5-Sat6':'L1↔L1',
+};
+const SAT_LAYER = {
+  Sat1:'L3',Sat2:'L2',Sat3:'L2',
+  Sat4:'L1',Sat5:'L1',Sat6:'L1',
+};
+const PLANET_ROOT = 3;
+const GRID        = (PLANET_ROOT + 15) ** 2;  // 324
+const CENTER      = GRID / 2;                 // 162
+
+const LINK_PALETTE = [
+  '#58a6ff','#3fb950','#ffd700','#f85149',
+  '#a371f7','#79c0ff','#56d364','#ffa657','#ff7b72',
+];
+const LINK_COLOR  = Object.fromEntries(ALL_LINKS.map((l,i) => [l, LINK_PALETTE[i]]));
+const SAT_COLORS  = {L1:'#ffd700', L2:'#4fc3f7', L3:'#ce93d8'};
+
+const C = {
+  bg:'#0d1117', panel:'#161b22', border:'#30363d',
+  text:'#c9d1d9', muted:'#8b949e',
+  green:'#3fb950', red:'#f85149', accent:'#58a6ff',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PARSE CSV
+// ══════════════════════════════════════════════════════════════════════════════
+function parseCSV(text) {
+  const lines  = text.trim().split('\n');
+  const header = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    // handle quoted fields (e.g. "Sat2,Sat3")
+    const cols = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    cols.push(cur.trim());
+    const obj = {};
+    header.forEach((h, i) => obj[h] = cols[i] ?? '');
+    return obj;
+  });
+}
+
+function buildData(rows) {
+  /* Returns:
+       simNums  : sorted int[]
+       tickData : { sim: { tick: { link: ms|null } } }
+       posData  : { sim: { tick: { sat: {x,y,alt} } } }
+       timeData : { sim: { tick: seconds } }
+  */
+  const simNums  = [...new Set(rows.map(r => +r.sim_number))].sort((a,b)=>a-b);
+  const tickData = {}, posData = {}, timeData = {};
+
+  for (const sim of simNums) {
+    const sRows  = rows.filter(r => +r.sim_number === sim);
+    const ticks  = [...new Set(sRows.map(r => +r.tick))].sort((a,b)=>a-b);
+    tickData[sim] = {}; posData[sim] = {}; timeData[sim] = {};
+
+    for (const tick of ticks) {
+      const tRows = sRows.filter(r => +r.tick === tick);
+      const sats  = {};
+      for (const r of tRows) {
+        const canSee = r.can_see ? r.can_see.split(',').map(s=>s.trim()).filter(Boolean) : [];
+        sats[r.sat_name] = { x: +r.x, y: +r.y, alt: +r.orbit_altitude, canSee };
+        timeData[sim][tick] = +r.time_s;
+      }
+      posData[sim][tick] = sats;
+
+      const delays = {};
+      for (const [a,b] of TOPOLOGY) {
+        const link = `${a}-${b}`;
+        if (sats[a] && sats[b]) {
+          const sa = sats[a], sb = sats[b];
+          delays[link] = sa.canSee.includes(b)
+            ? computeDelay(sa.alt, sb.alt, sa.x, sa.y, sb.x, sb.y)
+            : null;
+        } else {
+          delays[link] = null;
+        }
+      }
+      tickData[sim][tick] = delays;
+    }
+  }
+  return { simNums, tickData, posData, timeData };
+}
+
+function computeDelay(altA, altB, x1, y1, x2, y2) {
+  const dist = Math.hypot(x2-x1, y2-y1);
+  return +((altA+altB)/2*8 + dist*0.05).toFixed(1);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CANVAS HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function resizeCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+function drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax) {
+  const steps = 4;
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+  ctx.fillStyle   = C.muted;  ctx.font = '9px monospace';
+  // horizontal
+  for (let i = 0; i <= steps; i++) {
+    const y  = pad.top + (H - pad.top - pad.bot) * (1 - i/steps);
+    const lv = yMin + (yMax - yMin) * (i/steps);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillText(lv.toFixed(0), pad.left - 34, y + 3);
+  }
+  // vertical
+  ctx.textAlign = 'center';
+  const nX = Math.min(xMax - xMin + 1, 8);
+  const step = Math.ceil((xMax - xMin + 1) / nX);
+  for (let x = xMin; x <= xMax; x += step) {
+    const px = pad.left + (x - xMin) / (xMax - xMin || 1) * (W - pad.left - pad.right);
+    ctx.beginPath(); ctx.moveTo(px, pad.top); ctx.lineTo(px, H - pad.bot); ctx.stroke();
+    ctx.fillText(x, px, H - pad.bot + 12);
+  }
+  ctx.textAlign = 'left';
+}
+
+function toCanvasX(val, min, max, left, width)  { return left + (val - min) / (max - min || 1) * width; }
+function toCanvasY(val, min, max, top,  height) { return top  + (1 - (val - min) / (max - min || 1)) * height; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function drawLine(sim, tickData, posData, timeData, curTick) {
+  const canvas = document.getElementById('c-line');
+  const W = canvas.getBoundingClientRect().width;
+  const H = +canvas.style.height.replace('px','') || 180;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+
+  ctx.fillStyle = C.panel;
+  ctx.fillRect(0, 0, W, H);
+
+  const ticks = Object.keys(tickData[sim]).map(Number).sort((a,b)=>a-b);
+  if (!ticks.length) return;
+
+  const pad = {top:14, bot:22, left:44, right:12};
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bot;
+  const xMin = ticks[0], xMax = ticks[ticks.length-1];
+
+  // y range from all delays
+  let yMin = Infinity, yMax = -Infinity;
+  for (const t of ticks) for (const l of ALL_LINKS) {
+    const d = tickData[sim][t][l];
+    if (d != null) { yMin = Math.min(yMin, d); yMax = Math.max(yMax, d); }
+  }
+  if (yMin === Infinity) return;
+  const yPad = (yMax - yMin) * 0.12 || 5;
+  yMin -= yPad; yMax += yPad;
+
+  drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax);
+
+  // axis labels
+  ctx.fillStyle = C.muted; ctx.font = '9px monospace';
+  ctx.save(); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Delay (ms)', -(H/2 + 20), 11);
+  ctx.restore();
+  ctx.textAlign = 'center';
+  ctx.fillText('Tick', pad.left + cW/2, H - 2);
+  ctx.textAlign = 'left';
+
+  // lines
+  for (const link of ALL_LINKS) {
+    ctx.strokeStyle = LINK_COLOR[link];
+    ctx.lineWidth = 1.8; ctx.setLineDash([]);
+    ctx.globalAlpha = 0.85;
+    let started = false;
+    ctx.beginPath();
+    for (const t of ticks) {
+      const d = tickData[sim][t][link];
+      if (d == null) { started = false; continue; }
+      const px = toCanvasX(t, xMin, xMax, pad.left, cW);
+      const py = toCanvasY(d, yMin, yMax, pad.top,  cH);
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else          { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // current tick line
+  const cx = toCanvasX(curTick, xMin, xMax, pad.left, cW);
+  ctx.strokeStyle = C.text; ctx.lineWidth = 1.4;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(cx, pad.top); ctx.lineTo(cx, H - pad.bot); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // legend
+  const leg = document.getElementById('legend-line');
+  leg.innerHTML = ALL_LINKS.map(l =>
+    `<div class="legend-item">
+       <div class="legend-swatch" style="background:${LINK_COLOR[l]}"></div>
+       <span>${l}</span>
+     </div>`
+  ).join('');
+}
+
+function drawBar(sim, tickData) {
+  const canvas = document.getElementById('c-bar');
+  const W = canvas.getBoundingClientRect().width;
+  const H = +canvas.style.height.replace('px','') || 180;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+
+  ctx.fillStyle = C.panel;
+  ctx.fillRect(0, 0, W, H);
+
+  const ticks = Object.keys(tickData[sim]).map(Number);
+  const avgs  = ALL_LINKS.map(link => {
+    const vals = ticks.map(t => tickData[sim][t][link]).filter(d => d != null);
+    return { link, avg: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0 };
+  }).sort((a,b) => b.avg - a.avg);
+
+  const pad = {top:10, bot:10, left:90, right:40};
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bot;
+  const barH= Math.max(5, cH / avgs.length * 0.68);
+  const maxV= avgs[0]?.avg || 1;
+
+  avgs.forEach(({link, avg}, i) => {
+    const y    = pad.top + (cH / avgs.length) * i + (cH / avgs.length - barH) / 2;
+    const bW   = (avg / maxV) * cW;
+    ctx.fillStyle = LINK_COLOR[link];
+    ctx.globalAlpha = 0.85;
+    ctx.fillRect(pad.left, y, bW, barH);
+    ctx.globalAlpha = 1;
+
+    // link label
+    ctx.fillStyle = C.text; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(link, pad.left - 4, y + barH * 0.72);
+
+    // value label
+    if (avg > 0) {
+      ctx.fillStyle = C.muted; ctx.textAlign = 'left';
+      ctx.fillText(`${avg.toFixed(0)} ms`, pad.left + bW + 4, y + barH * 0.72);
+    }
+  });
+  ctx.textAlign = 'left';
+}
+
+function drawTimeline(sim, tickData, curTick) {
+  const canvas = document.getElementById('c-timeline');
+  const W  = canvas.getBoundingClientRect().width;
+  const H  = +canvas.style.height.replace('px','') || 200;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+
+  ctx.fillStyle = C.panel;
+  ctx.fillRect(0, 0, W, H);
+
+  const ticks  = Object.keys(tickData[sim]).map(Number).sort((a,b)=>a-b);
+  if (!ticks.length) return;
+  const n      = ALL_LINKS.length;
+  const pad    = {top:10, bot:22, left:92, right:16};
+  const cW     = W - pad.left - pad.right;
+  const cH     = H - pad.top  - pad.bot;
+  const rowH   = cH / n;
+  const cellW  = cW / ticks.length;
+
+  ticks.forEach((tick, ti) => {
+    ALL_LINKS.forEach((link, li) => {
+      const d  = tickData[sim][tick][link];
+      const x  = pad.left + ti * cellW;
+      const y  = pad.top  + li * rowH;
+      const bW = Math.max(1, cellW - 1);
+      const bH = Math.max(1, rowH  - 1);
+
+      ctx.fillStyle   = d != null ? C.green : C.red;
+      ctx.globalAlpha = 0.78;
+      ctx.fillRect(x, y, bW, bH);
+      ctx.globalAlpha = 1;
+
+      if (d != null && cellW > 28 && rowH > 12) {
+        ctx.fillStyle = '#0d1117'; ctx.font = `${Math.min(9, rowH*0.55)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`${d.toFixed(0)}`, x + bW/2, y + bH * 0.68);
+      }
+    });
+  });
+
+  // link labels
+  ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.font = '9px monospace';
+  ALL_LINKS.forEach((link, li) => {
+    const y = pad.top + li * rowH + rowH * 0.68;
+    ctx.fillText(link, pad.left - 4, y);
+  });
+
+  // tick labels
+  ctx.textAlign = 'center'; ctx.fillStyle = C.muted; ctx.font = '9px monospace';
+  const step = Math.ceil(ticks.length / 8);
+  ticks.forEach((tick, ti) => {
+    if (ti % step === 0) {
+      const x = pad.left + ti * cellW + cellW/2;
+      ctx.fillText(tick, x, H - pad.bot + 12);
+    }
+  });
+
+  // current tick highlight
+  const ti  = ticks.indexOf(curTick);
+  if (ti >= 0) {
+    const x = pad.left + ti * cellW;
+    ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+    ctx.strokeRect(x, pad.top, cellW, cH);
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.accent; ctx.globalAlpha = 0.08;
+    ctx.fillRect(x, pad.top, cellW, cH);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.textAlign = 'left';
+}
+
+function drawMap(sim, posData, tickData, curTick) {
+  const canvas = document.getElementById('c-map');
+  const W  = canvas.getBoundingClientRect().width;
+  const H  = +canvas.style.height.replace('px','') || 200;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+
+  ctx.fillStyle = '#080d14';
+  ctx.fillRect(0, 0, W, H);
+
+  const pad  = 20;
+  const size = Math.min(W, H) - pad * 2;
+  const ox   = (W - size) / 2;
+  const oy   = (H - size) / 2;
+  const scale = size / (GRID + 30);
+
+  function toScreen(gx, gy) {
+    return [ox + (gx + 15) * scale, oy + (GRID - gy + 15) * scale];
+  }
+
+  // Orbital shells
+  const shells = [{alt:5, col:'#ffd700', lbl:'L1'}, {alt:10, col:'#4fc3f7', lbl:'L2'}, {alt:15, col:'#ce93d8', lbl:'L3'}];
+  for (const {alt, col, lbl} of shells) {
+    const side = (PLANET_ROOT + alt) ** 2;
+    const half = side / 2;
+    const [sx, sy] = toScreen(CENTER - half, CENTER + half);
+    const sw = side * scale, sh = side * scale;
+    ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.55;
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(sx, sy, sw, sh);
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = col; ctx.font = '8px monospace';
+    ctx.fillText(lbl, sx + 3, sy + 12);
+  }
+
+  // Planet
+  const [pcx, pcy] = toScreen(CENTER, CENTER);
+  ctx.beginPath(); ctx.arc(pcx, pcy, 8, 0, Math.PI*2);
+  ctx.fillStyle = '#0d2137'; ctx.fill();
+  ctx.fillStyle = '#79c0ff'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('⊕', pcx, pcy + 4);
+  ctx.textAlign = 'left';
+
+  const positions = posData[sim]?.[curTick] || {};
+  const delays    = tickData[sim]?.[curTick] || {};
+
+  // Active links
+  for (const link of ALL_LINKS) {
+    if (delays[link] == null) continue;
+    const [a, b]   = link.split('-');
+    const sa = positions[a], sb = positions[b];
+    if (!sa || !sb) continue;
+    const [x1, y1] = toScreen(sa.x, sa.y);
+    const [x2, y2] = toScreen(sb.x, sb.y);
+    ctx.strokeStyle = LINK_COLOR[link]; ctx.lineWidth = 1.1;
+    ctx.globalAlpha = 0.45;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Satellites
+  const MARKERS = {L1:'circle', L2:'triangle', L3:'diamond'};
+  for (const [sat, info] of Object.entries(positions)) {
+    const layer = SAT_LAYER[sat] || 'L1';
+    const col   = SAT_COLORS[layer];
+    const [sx, sy] = toScreen(info.x, info.y);
+    const r = 5;
+    ctx.fillStyle = col; ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    if (layer === 'L3') { // diamond
+      ctx.moveTo(sx, sy-r); ctx.lineTo(sx+r, sy); ctx.lineTo(sx, sy+r); ctx.lineTo(sx-r, sy);
+    } else if (layer === 'L2') { // triangle
+      ctx.moveTo(sx, sy-r); ctx.lineTo(sx+r*0.87, sy+r*0.5); ctx.lineTo(sx-r*0.87, sy+r*0.5);
+    } else { // circle
+      ctx.arc(sx, sy, r, 0, Math.PI*2);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = col; ctx.font = '7px monospace';
+    ctx.fillText(sat, sx + r + 2, sy + 3);
+  }
+
+  // Legend
+  ctx.font = '7px monospace';
+  const leItems = [{col:'#ffd700', lbl:'L1 (● 5km)'}, {col:'#4fc3f7', lbl:'L2 (▲ 10km)'}, {col:'#ce93d8', lbl:'L3 (◆ 15km)'}];
+  leItems.forEach(({col,lbl}, i) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(8, H - 14 - i*12, 8, 6);
+    ctx.fillStyle = C.muted;
+    ctx.fillText(lbl, 19, H - 10 - i*12);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UPDATE / STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let STATE = null;
+
+function getCurrentSim() {
+  return parseInt(document.getElementById('sim-select').value, 10);
+}
+
+function updateKPIs(sim, tick) {
+  const { tickData, timeData } = STATE;
+  const delays  = tickData[sim][tick];
+  const active  = Object.values(delays).filter(d => d != null);
+  const avg     = active.length ? (active.reduce((a,b)=>a+b,0)/active.length).toFixed(1) : '—';
+  const time_s  = timeData[sim][tick];
+  const n       = STATE.simNums.length;
+  const idx     = STATE.simNums.indexOf(sim) + 1;
+
+  document.getElementById('v-sim').textContent   = `#${sim}`;
+  document.getElementById('u-sim').textContent   = `${idx} of ${n} run${n !== 1?'s':''}`;
+  document.getElementById('v-tick').textContent  = tick;
+  document.getElementById('u-tick').textContent  = `time = ${time_s.toFixed(0)} s`;
+  document.getElementById('v-links').textContent = `${active.length} / ${ALL_LINKS.length}`;
+  document.getElementById('v-delay').textContent = avg;
+
+  const linkCard = document.getElementById('kpi-links');
+  const col = active.length >= 6 ? 'var(--green)' : active.length >= 3 ? 'var(--yellow)' : 'var(--red)';
+  linkCard.style.borderTopColor = col;
+  document.getElementById('v-links').style.color = col;
+}
+
+function renderAll() {
+  if (!STATE) return;
+  const sim  = getCurrentSim();
+  const tick = parseInt(document.getElementById('tick-slider').value, 10);
+  document.getElementById('tick-label').textContent = `Tick ${tick}  (${STATE.timeData[sim][tick]?.toFixed(0) ?? '?'} s)`;
+
+  updateKPIs(sim, tick);
+  drawLine    (sim, STATE.tickData, STATE.posData, STATE.timeData, tick);
+  drawBar     (sim, STATE.tickData);
+  drawTimeline(sim, STATE.tickData, tick);
+  drawMap     (sim, STATE.posData, STATE.tickData, tick);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FILE LOAD
+// ══════════════════════════════════════════════════════════════════════════════
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rows = parseCSV(ev.target.result);
+    const data = buildData(rows);
+    STATE = data;
+
+    // populate sim selector
+    const sel = document.getElementById('sim-select');
+    sel.innerHTML = data.simNums.map(s => `<option value="${s}">Run #${s}</option>`).join('');
+
+    // setup slider
+    const ticks = Object.keys(data.tickData[data.simNums[0]]).map(Number).sort((a,b)=>a-b);
+    const slider = document.getElementById('tick-slider');
+    slider.min = ticks[0]; slider.max = ticks[ticks.length-1]; slider.value = ticks[0];
+
+    document.getElementById('load-banner').style.display = 'none';
+    document.getElementById('dashboard').style.display   = 'block';
+
+    setTimeout(renderAll, 50); // let layout settle before measuring canvas
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('tick-slider').addEventListener('input', renderAll);
+document.getElementById('sim-select').addEventListener('change', () => {
+  const sim   = getCurrentSim();
+  const ticks = Object.keys(STATE.tickData[sim]).map(Number).sort((a,b)=>a-b);
+  const slider = document.getElementById('tick-slider');
+  slider.min = ticks[0]; slider.max = ticks[ticks.length-1]; slider.value = ticks[0];
+  renderAll();
+});
+
+window.addEventListener('resize', () => { if (STATE) renderAll(); });
+</script>
+</body>
+</html>

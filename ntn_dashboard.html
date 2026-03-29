@@ -20,6 +20,7 @@
   --gold:    #ffd700;
   --lblue:   #4fc3f7;
   --lpurple: #ce93d8;
+  --orange:  #ffa657;
 }
 body {
   background: var(--bg);
@@ -41,12 +42,7 @@ header {
   gap: 12px;
   flex-wrap: wrap;
 }
-header h1 {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.5px;
-}
+header h1 { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
 .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .btn {
   background: var(--bg);
@@ -63,13 +59,9 @@ header h1 {
 
 /* file-load banner */
 #load-banner {
-  margin: 32px auto;
-  max-width: 480px;
-  text-align: center;
-  padding: 40px 20px;
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  color: var(--muted);
+  margin: 32px auto; max-width: 520px; text-align: center;
+  padding: 40px 20px; border: 2px dashed var(--border);
+  border-radius: 12px; color: var(--muted);
 }
 #load-banner h2 { color: var(--text); margin-bottom: 10px; font-size: 15px; }
 #load-banner p  { font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
@@ -80,96 +72,103 @@ header h1 {
 
 /* KPI row */
 .kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 14px;
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: 12px; margin-bottom: 14px;
 }
 .kpi-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   border-top-width: 3px;
 }
 .kpi-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; }
-.kpi-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.kpi-value { font-size: 22px; font-weight: 700; line-height: 1; }
 .kpi-unit  { font-size: 10px; color: var(--muted); }
 
 /* chart rows */
-.chart-row {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 14px;
-}
+.chart-row { display: grid; gap: 12px; margin-bottom: 14px; }
 .chart-row.top { grid-template-columns: 2.6fr 1fr; }
-.chart-row.bot { grid-template-columns: 1.9fr 1fr; }
+.chart-row.mid { grid-template-columns: 1.9fr 1fr; }
+.chart-row.bot { grid-template-columns: 2.6fr 1fr; }
+.chart-row.ai-row { grid-template-columns: 2.2fr 1fr; }
 
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px 10px;
+  display: flex; flex-direction: column; gap: 8px;
 }
 .panel-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: .4px;
-  text-transform: uppercase;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: .4px; text-transform: uppercase;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 canvas { width: 100% !important; }
 
-/* tick slider row */
-.controls-row {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+/* section divider */
+.section-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 6px 0 14px; padding: 0 2px;
 }
-.controls-row label { font-size: 11px; color: var(--muted); white-space: nowrap; }
-input[type=range] {
-  flex: 1;
-  min-width: 120px;
-  accent-color: var(--accent);
-  cursor: pointer;
+.section-divider span {
+  font-size: 12px; font-weight: 700; color: var(--orange);
+  letter-spacing: .6px; text-transform: uppercase; white-space: nowrap;
 }
-select {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 4px 8px;
-  border-radius: 5px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.tick-display {
-  font-size: 12px;
-  color: var(--accent);
-  font-weight: 700;
-  min-width: 80px;
-  text-align: right;
+.section-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
 }
 
-/* link legend */
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  font-size: 10px;
-  color: var(--muted);
+/* e2e path text */
+.e2e-path {
+  font-size: 10px; color: var(--muted); font-family: monospace;
+  word-break: break-all; line-height: 1.5; min-height: 16px;
 }
+.e2e-path span { color: var(--accent); }
+
+/* path-compare display */
+.path-block { margin-bottom: 8px; }
+.path-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.path-route {
+  font-size: 11px; font-family: monospace; color: var(--text);
+  padding: 4px 8px; background: var(--bg); border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.path-cost {
+  font-size: 10px; color: var(--muted); margin-top: 2px;
+}
+.path-cost strong { color: var(--text); }
+
+/* stat grid */
+.stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; font-size: 11px; color: var(--muted);
+}
+.stat-grid .stat-val { color: var(--text); font-weight: 600; }
+
+/* hidden when no predictions */
+.ai-section { display: none; }
+.ai-section.visible { display: block; }
+
+/* tick slider row */
+.controls-row {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 18px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.controls-row label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+input[type=range] { flex: 1; min-width: 120px; accent-color: var(--accent); cursor: pointer; }
+select {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 4px 8px; border-radius: 5px; font-size: 12px; cursor: pointer;
+}
+.tick-display { font-size: 12px; color: var(--accent); font-weight: 700; min-width: 80px; text-align: right; }
+
+/* link legend */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 10px; color: var(--muted); }
 .legend-item { display: flex; align-items: center; gap: 5px; }
 .legend-swatch { width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; }
 </style>
@@ -182,9 +181,7 @@ select {
   <div class="header-controls">
     <label style="color:var(--muted);font-size:12px">Simulation run:</label>
     <select id="sim-select"></select>
-    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
-      Load CSV
-    </button>
+    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Load CSV</button>
     <input type="file" id="file-input" accept=".csv">
   </div>
 </header>
@@ -192,11 +189,11 @@ select {
 <!-- ── load banner ───────────────────────────────────────────────────────── -->
 <div id="load-banner">
   <h2>Load simulation data</h2>
-  <p>Select your <code>simulation results.csv</code> file to visualise link delays,
-     satellite positions, and network state across every simulation tick.</p>
-  <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
-    Choose File…
-  </button>
+  <p>Select your <code>ml_training_enriched.csv</code> (or <code>ml_training_all_sims.csv</code>)
+     to visualise link delays, satellite positions, e2e RTT, and network state.<br>
+     <span style="color:var(--orange)">Tip:</span> Run <code>python3 enrich_predictions.py</code> first
+     to add ML predictions &amp; path comparisons.</p>
+  <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Choose File…</button>
 </div>
 
 <!-- ── dashboard ─────────────────────────────────────────────────────────── -->
@@ -224,6 +221,16 @@ select {
       <span class="kpi-value" style="color:var(--purple)" id="v-delay">—</span>
       <span class="kpi-unit">ms (active only)</span>
     </div>
+    <div class="kpi-card" id="kpi-rtt"    style="border-top-color:var(--lblue)">
+      <span class="kpi-label">E2E RTT Avg</span>
+      <span class="kpi-value" style="color:var(--lblue)" id="v-rtt">—</span>
+      <span class="kpi-unit"  id="u-rtt">ms</span>
+    </div>
+    <div class="kpi-card" id="kpi-loss"   style="border-top-color:var(--green)">
+      <span class="kpi-label">Packet Loss</span>
+      <span class="kpi-value" style="color:var(--green)" id="v-loss">—</span>
+      <span class="kpi-unit"  id="u-loss">%</span>
+    </div>
   </div>
 
   <!-- Row 1: delay line + avg bar -->
@@ -240,7 +247,7 @@ select {
   </div>
 
   <!-- Row 2: timeline + sat map -->
-  <div class="chart-row bot">
+  <div class="chart-row mid">
     <div class="panel">
       <span class="panel-title">Link Up / Down Timeline</span>
       <canvas id="c-timeline" height="200"></canvas>
@@ -248,6 +255,80 @@ select {
     <div class="panel">
       <span class="panel-title">Satellite Position Map</span>
       <canvas id="c-map" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Row 3: E2E RTT over time + e2e info panel -->
+  <div class="chart-row bot">
+    <div class="panel">
+      <span class="panel-title">E2E RTT over Time</span>
+      <canvas id="c-rtt" height="120"></canvas>
+    </div>
+    <div class="panel" style="justify-content:center;gap:12px">
+      <span class="panel-title">E2E Path (current tick)</span>
+      <div class="e2e-path" id="e2e-path-display">—</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:var(--muted)">
+        <div>Min RTT: <span id="e2e-rtt-min" style="color:var(--text)">—</span> ms</div>
+        <div>Max RTT: <span id="e2e-rtt-max" style="color:var(--text)">—</span> ms</div>
+        <div>Jitter:  <span id="e2e-rtt-mdev" style="color:var(--text)">—</span> ms</div>
+        <div>Hops:    <span id="e2e-hops" style="color:var(--accent)">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ AI vs Baseline Section ═══════════════════════════════════════════ -->
+  <div class="ai-section" id="ai-section">
+    <div class="section-divider"><span>AI Prediction vs Baseline</span></div>
+
+    <!-- Row 4: Predicted vs Actual delay -->
+    <div class="chart-row ai-row" style="margin-bottom:14px">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Predicted vs Actual Link Delay</span>
+          <select id="pred-link-select" style="font-size:11px"></select>
+        </div>
+        <canvas id="c-pred" height="160"></canvas>
+        <div class="legend" id="legend-pred"></div>
+      </div>
+      <div class="panel">
+        <span class="panel-title">Prediction Accuracy (all links)</span>
+        <canvas id="c-scatter" height="160"></canvas>
+        <div id="pred-metrics" style="font-size:10px;color:var(--muted);text-align:center;margin-top:2px"></div>
+      </div>
+    </div>
+
+    <!-- Row 5: Path cost comparison -->
+    <div class="chart-row ai-row">
+      <div class="panel">
+        <span class="panel-title">Path Cost: AI vs OSPF (actual delay along chosen path)</span>
+        <canvas id="c-pathcost" height="140"></canvas>
+        <div class="legend" id="legend-path"></div>
+      </div>
+      <div class="panel" style="justify-content:center;gap:10px">
+        <span class="panel-title">Path Comparison (current tick)</span>
+
+        <div class="path-block">
+          <div class="path-label" style="color:var(--orange)">AI Path (predicted-delay routing)</div>
+          <div class="path-route" id="ai-path-route">—</div>
+          <div class="path-cost">Actual cost: <strong id="ai-path-cost">—</strong> ms</div>
+        </div>
+
+        <div class="path-block">
+          <div class="path-label" style="color:var(--accent)">OSPF Baseline (cost routing)</div>
+          <div class="path-route" id="ospf-path-route">—</div>
+          <div class="path-cost">Actual cost: <strong id="ospf-path-cost">—</strong> ms</div>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:8px">
+          <span class="panel-title">Simulation Summary</span>
+          <div class="stat-grid" style="margin-top:6px">
+            <div>AI wins: <span class="stat-val" id="stat-ai-wins">—</span></div>
+            <div>OSPF wins: <span class="stat-val" id="stat-ospf-wins">—</span></div>
+            <div>Ties: <span class="stat-val" id="stat-ties">—</span></div>
+            <div>Avg savings: <span class="stat-val" id="stat-savings">—</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -263,42 +344,36 @@ select {
 // ══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════════════════════════
-const TOPOLOGY = [
-  ['Sat1','Sat2'],['Sat1','Sat3'],
-  ['Sat2','Sat3'],
-  ['Sat2','Sat4'],['Sat2','Sat5'],
-  ['Sat3','Sat5'],['Sat3','Sat6'],
-  ['Sat4','Sat5'],
-  ['Sat5','Sat6'],
-];
-const ALL_LINKS   = TOPOLOGY.map(([a,b]) => `${a}-${b}`);
-const LINK_LAYER  = {
-  'Sat1-Sat2':'L3↔L2','Sat1-Sat3':'L3↔L2',
-  'Sat2-Sat3':'L2↔L2',
-  'Sat2-Sat4':'L2↔L1','Sat2-Sat5':'L2↔L1',
-  'Sat3-Sat5':'L2↔L1','Sat3-Sat6':'L2↔L1',
-  'Sat4-Sat5':'L1↔L1','Sat5-Sat6':'L1↔L1',
-};
-const SAT_LAYER = {
-  Sat1:'L3',Sat2:'L2',Sat3:'L2',
-  Sat4:'L1',Sat5:'L1',Sat6:'L1',
-};
 const PLANET_ROOT = 3;
-const GRID        = (PLANET_ROOT + 15) ** 2;  // 324
-const CENTER      = GRID / 2;                 // 162
+const GRID        = (PLANET_ROOT + 15) ** 2;
+const CENTER      = GRID / 2;
 
 const LINK_PALETTE = [
   '#58a6ff','#3fb950','#ffd700','#f85149',
-  '#a371f7','#79c0ff','#56d364','#ffa657','#ff7b72',
+  '#a371f7','#79c0ff','#56d364','#ffa657','#ff7b72','#e8a0bf',
+  '#c9d1d9','#80cbc4',
 ];
-const LINK_COLOR  = Object.fromEntries(ALL_LINKS.map((l,i) => [l, LINK_PALETTE[i]]));
-const SAT_COLORS  = {L1:'#ffd700', L2:'#4fc3f7', L3:'#ce93d8'};
+const SAT_COLORS = { L1:'#ffd700', L2:'#4fc3f7', L3:'#ce93d8' };
 
 const C = {
   bg:'#0d1117', panel:'#161b22', border:'#30363d',
   text:'#c9d1d9', muted:'#8b949e',
   green:'#3fb950', red:'#f85149', accent:'#58a6ff',
+  orange:'#ffa657', purple:'#a371f7',
 };
+
+let ALL_LINKS  = [];
+let LINK_COLOR = {};
+let SAT_LAYER  = {};
+
+// Prediction topology links (from the enrichment script)
+const TOPO_LINKS = [
+  'Sat1-Sat2','Sat1-Sat3','Sat2-Sat3',
+  'Sat2-Sat4','Sat2-Sat5','Sat3-Sat5','Sat3-Sat6',
+  'Sat4-Sat5','Sat5-Sat6',
+];
+
+function altToLayer(a) { return a <= 7 ? 'L1' : a <= 12 ? 'L2' : 'L3'; }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PARSE CSV
@@ -307,11 +382,9 @@ function parseCSV(text) {
   const lines  = text.trim().split('\n');
   const header = lines[0].split(',').map(h => h.trim());
   return lines.slice(1).map(line => {
-    // handle quoted fields (e.g. "Sat2,Sat3")
-    const cols = [];
-    let cur = '', inQ = false;
+    const cols = []; let cur = '', inQ = false;
     for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; }
+      if (ch === '"') inQ = !inQ;
       else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
       else cur += ch;
     }
@@ -322,52 +395,105 @@ function parseCSV(text) {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// BUILD DATA
+// ══════════════════════════════════════════════════════════════════════════════
 function buildData(rows) {
-  /* Returns:
-       simNums  : sorted int[]
-       tickData : { sim: { tick: { link: ms|null } } }
-       posData  : { sim: { tick: { sat: {x,y,alt} } } }
-       timeData : { sim: { tick: seconds } }
-  */
-  const simNums  = [...new Set(rows.map(r => +r.sim_number))].sort((a,b)=>a-b);
-  const tickData = {}, posData = {}, timeData = {};
+  if (!rows.length) return null;
+  const headers = Object.keys(rows[0]);
+
+  // Discover actual links
+  const links = [];
+  for (const h of headers) {
+    const m = h.match(/^link_(.+)_delay_ms$/);
+    if (m) links.push(m[1]);
+  }
+  ALL_LINKS  = links;
+  LINK_COLOR = Object.fromEntries(links.map((l, i) => [l, LINK_PALETTE[i % LINK_PALETTE.length]]));
+
+  // SAT_LAYER from first row
+  const first = rows[0];
+  SAT_LAYER = {};
+  for (let n = 1; n <= 12; n++) {
+    const name = `Sat${n}`;
+    const alt  = parseFloat(first[`${name}_alt`]);
+    if (!isNaN(alt)) SAT_LAYER[name] = altToLayer(alt);
+  }
+
+  // Detect prediction columns
+  const hasPredictions = headers.some(h => h.startsWith('pred_') && h.endsWith('_delay_ms'));
+  const predLinks = hasPredictions
+    ? TOPO_LINKS.filter(l => headers.includes(`pred_${l}_delay_ms`))
+    : [];
+
+  const simNums  = [...new Set(rows.map(r => +r.sim_number))].sort((a, b) => a - b);
+  const tickData = {}, posData = {}, timeData = {}, e2eData = {};
+  const predData = {};   // { sim: { tick: { link: pred_ms|null } } }
+  const pathData = {};   // { sim: { tick: { ai_path, ai_cost, ospf_path, ospf_cost } } }
 
   for (const sim of simNums) {
-    const sRows  = rows.filter(r => +r.sim_number === sim);
-    const ticks  = [...new Set(sRows.map(r => +r.tick))].sort((a,b)=>a-b);
+    const sRows = rows.filter(r => +r.sim_number === sim);
     tickData[sim] = {}; posData[sim] = {}; timeData[sim] = {};
+    e2eData[sim] = {}; predData[sim] = {}; pathData[sim] = {};
 
-    for (const tick of ticks) {
-      const tRows = sRows.filter(r => +r.tick === tick);
-      const sats  = {};
-      for (const r of tRows) {
-        const canSee = r.can_see ? r.can_see.split(',').map(s=>s.trim()).filter(Boolean) : [];
-        sats[r.sat_name] = { x: +r.x, y: +r.y, alt: +r.orbit_altitude, canSee };
-        timeData[sim][tick] = +r.time_s;
+    for (const r of sRows) {
+      const tick = +r.tick;
+      timeData[sim][tick] = parseFloat(r.sim_time_s) || 0;
+
+      // Link delays
+      const delays = {};
+      for (const link of links) {
+        const status = r[`link_${link}_status`];
+        const delay  = r[`link_${link}_delay_ms`];
+        delays[link] = (status === '1' && delay !== '' && delay != null)
+          ? parseFloat(delay) : null;
+      }
+      tickData[sim][tick] = delays;
+
+      // Satellite positions
+      const sats = {};
+      for (const name of Object.keys(SAT_LAYER)) {
+        const xv = r[`${name}_x`];
+        if (xv !== undefined && xv !== '') {
+          sats[name] = { x: parseFloat(xv), y: parseFloat(r[`${name}_y`]), alt: parseFloat(r[`${name}_alt`]) };
+        }
       }
       posData[sim][tick] = sats;
 
-      const delays = {};
-      for (const [a,b] of TOPOLOGY) {
-        const link = `${a}-${b}`;
-        if (sats[a] && sats[b]) {
-          const sa = sats[a], sb = sats[b];
-          delays[link] = sa.canSee.includes(b)
-            ? computeDelay(sa.alt, sb.alt, sa.x, sa.y, sb.x, sb.y)
-            : null;
-        } else {
-          delays[link] = null;
+      // E2E metrics
+      const fld = k => { const v = r[k]; return v !== '' && v != null ? parseFloat(v) : null; };
+      e2eData[sim][tick] = {
+        reachable:   r.e2e_reachable === '1',
+        rtt_avg:     fld('e2e_rtt_avg_ms'),
+        rtt_min:     fld('e2e_rtt_min_ms'),
+        rtt_max:     fld('e2e_rtt_max_ms'),
+        rtt_mdev:    fld('e2e_rtt_mdev_ms'),
+        packet_loss: fld('e2e_packet_loss_pct'),
+        hop_count:   fld('e2e_hop_count'),
+        path:        r.e2e_path || '',
+      };
+
+      // Prediction data
+      if (hasPredictions) {
+        const preds = {};
+        for (const pl of predLinks) {
+          const v = r[`pred_${pl}_delay_ms`];
+          preds[pl] = (v !== '' && v != null) ? parseFloat(v) : null;
         }
+        predData[sim][tick] = preds;
+
+        pathData[sim][tick] = {
+          ai_path:     r.ai_path || '',
+          ai_cost:     r.ai_path_cost_ms !== '' ? parseFloat(r.ai_path_cost_ms) : null,
+          ospf_path:   r.ospf_path || '',
+          ospf_cost:   r.ospf_path_cost_ms !== '' ? parseFloat(r.ospf_path_cost_ms) : null,
+        };
       }
-      tickData[sim][tick] = delays;
     }
   }
-  return { simNums, tickData, posData, timeData };
-}
 
-function computeDelay(altA, altB, x1, y1, x2, y2) {
-  const dist = Math.hypot(x2-x1, y2-y1);
-  return +((altA+altB)/2*8 + dist*0.05).toFixed(1);
+  return { simNums, tickData, posData, timeData, e2eData, predData, pathData,
+           links, predLinks, hasPredictions };
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -386,15 +512,13 @@ function resizeCanvas(canvas) {
 function drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax) {
   const steps = 4;
   ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
-  ctx.fillStyle   = C.muted;  ctx.font = '9px monospace';
-  // horizontal
+  ctx.fillStyle = C.muted; ctx.font = '9px monospace';
   for (let i = 0; i <= steps; i++) {
-    const y  = pad.top + (H - pad.top - pad.bot) * (1 - i/steps);
-    const lv = yMin + (yMax - yMin) * (i/steps);
+    const y  = pad.top + (H - pad.top - pad.bot) * (1 - i / steps);
+    const lv = yMin + (yMax - yMin) * (i / steps);
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
     ctx.fillText(lv.toFixed(0), pad.left - 34, y + 3);
   }
-  // vertical
   ctx.textAlign = 'center';
   const nX = Math.min(xMax - xMin + 1, 8);
   const step = Math.ceil((xMax - xMin + 1) / nX);
@@ -410,291 +534,516 @@ function toCanvasX(val, min, max, left, width)  { return left + (val - min) / (m
 function toCanvasY(val, min, max, top,  height) { return top  + (1 - (val - min) / (max - min || 1)) * height; }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// DRAW FUNCTIONS
+// DRAW: Link Delay line chart
 // ══════════════════════════════════════════════════════════════════════════════
-
-function drawLine(sim, tickData, posData, timeData, curTick) {
+function drawLine(sim, tickData, curTick) {
   const canvas = document.getElementById('c-line');
   const W = canvas.getBoundingClientRect().width;
   const H = +canvas.style.height.replace('px','') || 180;
   canvas.style.height = H + 'px';
   const ctx = resizeCanvas(canvas);
-
-  ctx.fillStyle = C.panel;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
 
   const ticks = Object.keys(tickData[sim]).map(Number).sort((a,b)=>a-b);
   if (!ticks.length) return;
 
-  const pad = {top:14, bot:22, left:44, right:12};
-  const cW  = W - pad.left - pad.right;
-  const cH  = H - pad.top  - pad.bot;
+  const pad = {top:14, bot:22, left:52, right:12};
+  const cW = W-pad.left-pad.right, cH = H-pad.top-pad.bot;
   const xMin = ticks[0], xMax = ticks[ticks.length-1];
 
-  // y range from all delays
-  let yMin = Infinity, yMax = -Infinity;
+  let yMin=Infinity, yMax=-Infinity;
   for (const t of ticks) for (const l of ALL_LINKS) {
     const d = tickData[sim][t][l];
     if (d != null) { yMin = Math.min(yMin, d); yMax = Math.max(yMax, d); }
   }
   if (yMin === Infinity) return;
-  const yPad = (yMax - yMin) * 0.12 || 5;
-  yMin -= yPad; yMax += yPad;
+  const yP = (yMax-yMin)*0.12||5; yMin-=yP; yMax+=yP;
 
   drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax);
+  ctx.fillStyle=C.muted; ctx.font='9px monospace';
+  ctx.save(); ctx.rotate(-Math.PI/2); ctx.fillText('Delay (ms)',-(H/2+20),11); ctx.restore();
+  ctx.textAlign='center'; ctx.fillText('Tick',pad.left+cW/2,H-2); ctx.textAlign='left';
 
-  // axis labels
-  ctx.fillStyle = C.muted; ctx.font = '9px monospace';
-  ctx.save(); ctx.rotate(-Math.PI/2);
-  ctx.fillText('Delay (ms)', -(H/2 + 20), 11);
-  ctx.restore();
-  ctx.textAlign = 'center';
-  ctx.fillText('Tick', pad.left + cW/2, H - 2);
-  ctx.textAlign = 'left';
-
-  // lines
   for (const link of ALL_LINKS) {
-    ctx.strokeStyle = LINK_COLOR[link];
-    ctx.lineWidth = 1.8; ctx.setLineDash([]);
-    ctx.globalAlpha = 0.85;
-    let started = false;
-    ctx.beginPath();
+    ctx.strokeStyle = LINK_COLOR[link]; ctx.lineWidth = 1.8; ctx.setLineDash([]); ctx.globalAlpha = 0.85;
+    let started = false; ctx.beginPath();
     for (const t of ticks) {
       const d = tickData[sim][t][link];
-      if (d == null) { started = false; continue; }
-      const px = toCanvasX(t, xMin, xMax, pad.left, cW);
-      const py = toCanvasY(d, yMin, yMax, pad.top,  cH);
-      if (!started) { ctx.moveTo(px, py); started = true; }
-      else          { ctx.lineTo(px, py); }
+      if (d==null) { started=false; continue; }
+      const px = toCanvasX(t,xMin,xMax,pad.left,cW), py = toCanvasY(d,yMin,yMax,pad.top,cH);
+      if (!started) { ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
     }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
+    ctx.stroke(); ctx.globalAlpha = 1;
   }
 
-  // current tick line
-  const cx = toCanvasX(curTick, xMin, xMax, pad.left, cW);
-  ctx.strokeStyle = C.text; ctx.lineWidth = 1.4;
-  ctx.setLineDash([4,3]);
-  ctx.beginPath(); ctx.moveTo(cx, pad.top); ctx.lineTo(cx, H - pad.bot); ctx.stroke();
-  ctx.setLineDash([]);
+  const cx = toCanvasX(curTick,xMin,xMax,pad.left,cW);
+  ctx.strokeStyle=C.text; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(cx,pad.top); ctx.lineTo(cx,H-pad.bot); ctx.stroke(); ctx.setLineDash([]);
 
-  // legend
-  const leg = document.getElementById('legend-line');
-  leg.innerHTML = ALL_LINKS.map(l =>
-    `<div class="legend-item">
-       <div class="legend-swatch" style="background:${LINK_COLOR[l]}"></div>
-       <span>${l}</span>
-     </div>`
+  document.getElementById('legend-line').innerHTML = ALL_LINKS.map(l =>
+    `<div class="legend-item"><div class="legend-swatch" style="background:${LINK_COLOR[l]}"></div><span>${l}</span></div>`
   ).join('');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Avg delay bar chart
+// ══════════════════════════════════════════════════════════════════════════════
 function drawBar(sim, tickData) {
   const canvas = document.getElementById('c-bar');
   const W = canvas.getBoundingClientRect().width;
-  const H = +canvas.style.height.replace('px','') || 180;
-  canvas.style.height = H + 'px';
+  const H = +canvas.style.height.replace('px','')||180;
+  canvas.style.height = H+'px';
   const ctx = resizeCanvas(canvas);
-
-  ctx.fillStyle = C.panel;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = C.panel; ctx.fillRect(0,0,W,H);
 
   const ticks = Object.keys(tickData[sim]).map(Number);
-  const avgs  = ALL_LINKS.map(link => {
-    const vals = ticks.map(t => tickData[sim][t][link]).filter(d => d != null);
-    return { link, avg: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0 };
-  }).sort((a,b) => b.avg - a.avg);
+  const avgs = ALL_LINKS.map(link => {
+    const vals = ticks.map(t=>tickData[sim][t][link]).filter(d=>d!=null);
+    return {link, avg: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0};
+  }).sort((a,b)=>b.avg-a.avg);
 
-  const pad = {top:10, bot:10, left:90, right:40};
-  const cW  = W - pad.left - pad.right;
-  const cH  = H - pad.top  - pad.bot;
-  const barH= Math.max(5, cH / avgs.length * 0.68);
-  const maxV= avgs[0]?.avg || 1;
+  const pad={top:10,bot:10,left:90,right:40};
+  const cW=W-pad.left-pad.right, cH=H-pad.top-pad.bot;
+  const barH=Math.max(5,cH/avgs.length*0.68);
+  const maxV=avgs[0]?.avg||1;
 
-  avgs.forEach(({link, avg}, i) => {
-    const y    = pad.top + (cH / avgs.length) * i + (cH / avgs.length - barH) / 2;
-    const bW   = (avg / maxV) * cW;
-    ctx.fillStyle = LINK_COLOR[link];
-    ctx.globalAlpha = 0.85;
-    ctx.fillRect(pad.left, y, bW, barH);
-    ctx.globalAlpha = 1;
-
-    // link label
-    ctx.fillStyle = C.text; ctx.font = '9px monospace'; ctx.textAlign = 'right';
-    ctx.fillText(link, pad.left - 4, y + barH * 0.72);
-
-    // value label
-    if (avg > 0) {
-      ctx.fillStyle = C.muted; ctx.textAlign = 'left';
-      ctx.fillText(`${avg.toFixed(0)} ms`, pad.left + bW + 4, y + barH * 0.72);
-    }
+  avgs.forEach(({link,avg},i)=>{
+    const y=pad.top+(cH/avgs.length)*i+(cH/avgs.length-barH)/2;
+    const bW=(avg/maxV)*cW;
+    ctx.fillStyle=LINK_COLOR[link]; ctx.globalAlpha=0.85;
+    ctx.fillRect(pad.left,y,bW,barH); ctx.globalAlpha=1;
+    ctx.fillStyle=C.text; ctx.font='9px monospace'; ctx.textAlign='right';
+    ctx.fillText(link,pad.left-4,y+barH*0.72);
+    if (avg>0) { ctx.fillStyle=C.muted; ctx.textAlign='left'; ctx.fillText(`${avg.toFixed(0)} ms`,pad.left+bW+4,y+barH*0.72); }
   });
-  ctx.textAlign = 'left';
+  ctx.textAlign='left';
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Link up/down timeline
+// ══════════════════════════════════════════════════════════════════════════════
 function drawTimeline(sim, tickData, curTick) {
   const canvas = document.getElementById('c-timeline');
-  const W  = canvas.getBoundingClientRect().width;
-  const H  = +canvas.style.height.replace('px','') || 200;
-  canvas.style.height = H + 'px';
+  const W=canvas.getBoundingClientRect().width;
+  const H=+canvas.style.height.replace('px','')||200;
+  canvas.style.height=H+'px';
   const ctx = resizeCanvas(canvas);
+  ctx.fillStyle=C.panel; ctx.fillRect(0,0,W,H);
 
-  ctx.fillStyle = C.panel;
-  ctx.fillRect(0, 0, W, H);
-
-  const ticks  = Object.keys(tickData[sim]).map(Number).sort((a,b)=>a-b);
+  const ticks=Object.keys(tickData[sim]).map(Number).sort((a,b)=>a-b);
   if (!ticks.length) return;
-  const n      = ALL_LINKS.length;
-  const pad    = {top:10, bot:22, left:92, right:16};
-  const cW     = W - pad.left - pad.right;
-  const cH     = H - pad.top  - pad.bot;
-  const rowH   = cH / n;
-  const cellW  = cW / ticks.length;
+  const n=ALL_LINKS.length;
+  const pad={top:10,bot:22,left:92,right:16};
+  const cW=W-pad.left-pad.right, cH=H-pad.top-pad.bot;
+  const rowH=cH/n, cellW=cW/ticks.length;
 
-  ticks.forEach((tick, ti) => {
-    ALL_LINKS.forEach((link, li) => {
-      const d  = tickData[sim][tick][link];
-      const x  = pad.left + ti * cellW;
-      const y  = pad.top  + li * rowH;
-      const bW = Math.max(1, cellW - 1);
-      const bH = Math.max(1, rowH  - 1);
-
-      ctx.fillStyle   = d != null ? C.green : C.red;
-      ctx.globalAlpha = 0.78;
-      ctx.fillRect(x, y, bW, bH);
-      ctx.globalAlpha = 1;
-
-      if (d != null && cellW > 28 && rowH > 12) {
-        ctx.fillStyle = '#0d1117'; ctx.font = `${Math.min(9, rowH*0.55)}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.fillText(`${d.toFixed(0)}`, x + bW/2, y + bH * 0.68);
+  ticks.forEach((tick,ti)=>{
+    ALL_LINKS.forEach((link,li)=>{
+      const d=tickData[sim][tick][link];
+      const x=pad.left+ti*cellW, y=pad.top+li*rowH;
+      const bW=Math.max(1,cellW-1), bH=Math.max(1,rowH-1);
+      ctx.fillStyle=d!=null?C.green:C.red; ctx.globalAlpha=0.78;
+      ctx.fillRect(x,y,bW,bH); ctx.globalAlpha=1;
+      if (d!=null&&cellW>28&&rowH>12) {
+        ctx.fillStyle='#0d1117'; ctx.font=`${Math.min(9,rowH*0.55)}px monospace`;
+        ctx.textAlign='center'; ctx.fillText(`${d.toFixed(0)}`,x+bW/2,y+bH*0.68);
       }
     });
   });
 
-  // link labels
-  ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.font = '9px monospace';
-  ALL_LINKS.forEach((link, li) => {
-    const y = pad.top + li * rowH + rowH * 0.68;
-    ctx.fillText(link, pad.left - 4, y);
-  });
+  ctx.textAlign='right'; ctx.fillStyle=C.text; ctx.font='9px monospace';
+  ALL_LINKS.forEach((link,li)=>{ ctx.fillText(link,pad.left-4,pad.top+li*rowH+rowH*0.68); });
 
-  // tick labels
-  ctx.textAlign = 'center'; ctx.fillStyle = C.muted; ctx.font = '9px monospace';
-  const step = Math.ceil(ticks.length / 8);
-  ticks.forEach((tick, ti) => {
-    if (ti % step === 0) {
-      const x = pad.left + ti * cellW + cellW/2;
-      ctx.fillText(tick, x, H - pad.bot + 12);
-    }
-  });
+  ctx.textAlign='center'; ctx.fillStyle=C.muted; ctx.font='9px monospace';
+  const step=Math.ceil(ticks.length/8);
+  ticks.forEach((tick,ti)=>{ if (ti%step===0) ctx.fillText(tick,pad.left+ti*cellW+cellW/2,H-pad.bot+12); });
 
-  // current tick highlight
-  const ti  = ticks.indexOf(curTick);
-  if (ti >= 0) {
-    const x = pad.left + ti * cellW;
-    ctx.strokeStyle = C.text; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
-    ctx.strokeRect(x, pad.top, cellW, cH);
-    ctx.setLineDash([]);
-    ctx.fillStyle = C.accent; ctx.globalAlpha = 0.08;
-    ctx.fillRect(x, pad.top, cellW, cH);
-    ctx.globalAlpha = 1;
+  const ti=ticks.indexOf(curTick);
+  if (ti>=0) {
+    const x=pad.left+ti*cellW;
+    ctx.strokeStyle=C.text; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+    ctx.strokeRect(x,pad.top,cellW,cH); ctx.setLineDash([]);
+    ctx.fillStyle=C.accent; ctx.globalAlpha=0.08; ctx.fillRect(x,pad.top,cellW,cH); ctx.globalAlpha=1;
   }
-
-  ctx.textAlign = 'left';
+  ctx.textAlign='left';
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Satellite position map
+// ══════════════════════════════════════════════════════════════════════════════
 function drawMap(sim, posData, tickData, curTick) {
   const canvas = document.getElementById('c-map');
-  const W  = canvas.getBoundingClientRect().width;
-  const H  = +canvas.style.height.replace('px','') || 200;
+  const W=canvas.getBoundingClientRect().width;
+  const H=+canvas.style.height.replace('px','')||200;
+  canvas.style.height=H+'px';
+  const ctx = resizeCanvas(canvas);
+  ctx.fillStyle='#080d14'; ctx.fillRect(0,0,W,H);
+
+  const pad=20, size=Math.min(W,H)-pad*2;
+  const ox=(W-size)/2, oy=(H-size)/2, scale=size/(GRID+30);
+  function toScreen(gx,gy) { return [ox+(gx+15)*scale, oy+(GRID-gy+15)*scale]; }
+
+  [{alt:5,col:'#ffd700',lbl:'L1'},{alt:10,col:'#4fc3f7',lbl:'L2'},{alt:15,col:'#ce93d8',lbl:'L3'}].forEach(({alt,col,lbl})=>{
+    const side=(PLANET_ROOT+alt)**2, half=side/2;
+    const [sx,sy]=toScreen(CENTER-half,CENTER+half);
+    ctx.strokeStyle=col; ctx.lineWidth=1.2; ctx.globalAlpha=0.55; ctx.setLineDash([4,3]);
+    ctx.strokeRect(sx,sy,side*scale,side*scale); ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=col; ctx.font='8px monospace'; ctx.fillText(lbl,sx+3,sy+12);
+  });
+
+  const [pcx,pcy]=toScreen(CENTER,CENTER);
+  ctx.beginPath(); ctx.arc(pcx,pcy,8,0,Math.PI*2); ctx.fillStyle='#0d2137'; ctx.fill();
+  ctx.fillStyle='#79c0ff'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('⊕',pcx,pcy+4); ctx.textAlign='left';
+
+  const positions=posData[sim]?.[curTick]||{};
+  const delays=tickData[sim]?.[curTick]||{};
+
+  for (const link of ALL_LINKS) {
+    if (delays[link]==null) continue;
+    const [a,b]=link.split('-');
+    const sa=positions[a], sb=positions[b]; if (!sa||!sb) continue;
+    const [x1,y1]=toScreen(sa.x,sa.y), [x2,y2]=toScreen(sb.x,sb.y);
+    ctx.strokeStyle=LINK_COLOR[link]; ctx.lineWidth=1.1; ctx.globalAlpha=0.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.globalAlpha=1;
+  }
+
+  for (const [sat,info] of Object.entries(positions)) {
+    const layer=SAT_LAYER[sat]||'L1', col=SAT_COLORS[layer];
+    const [sx,sy]=toScreen(info.x,info.y), r=5;
+    ctx.fillStyle=col; ctx.strokeStyle='#0d1117'; ctx.lineWidth=0.8;
+    ctx.beginPath();
+    if (layer==='L3') { ctx.moveTo(sx,sy-r); ctx.lineTo(sx+r,sy); ctx.lineTo(sx,sy+r); ctx.lineTo(sx-r,sy); }
+    else if (layer==='L2') { ctx.moveTo(sx,sy-r); ctx.lineTo(sx+r*0.87,sy+r*0.5); ctx.lineTo(sx-r*0.87,sy+r*0.5); }
+    else ctx.arc(sx,sy,r,0,Math.PI*2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=col; ctx.font='7px monospace'; ctx.fillText(sat,sx+r+2,sy+3);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: E2E RTT over time
+// ══════════════════════════════════════════════════════════════════════════════
+function drawRTT(sim, e2eData, curTick) {
+  const canvas = document.getElementById('c-rtt');
+  const W=canvas.getBoundingClientRect().width;
+  const H=+canvas.style.height.replace('px','')||120;
+  canvas.style.height=H+'px';
+  const ctx = resizeCanvas(canvas);
+  ctx.fillStyle=C.panel; ctx.fillRect(0,0,W,H);
+
+  const ticks=Object.keys(e2eData[sim]).map(Number).sort((a,b)=>a-b);
+  if (!ticks.length) return;
+  const pad={top:14,bot:22,left:52,right:12};
+  const cW=W-pad.left-pad.right, cH=H-pad.top-pad.bot;
+  const xMin=ticks[0], xMax=ticks[ticks.length-1];
+
+  const vals=ticks.map(t=>e2eData[sim][t].rtt_avg).filter(v=>v!=null);
+  if (!vals.length) {
+    ctx.fillStyle=C.muted; ctx.font='10px monospace'; ctx.textAlign='center';
+    ctx.fillText('No e2e RTT data',W/2,H/2); return;
+  }
+  let yMin=Math.min(...vals), yMax=Math.max(...vals);
+  const yP=(yMax-yMin)*0.15||10; yMin-=yP; yMax+=yP;
+  drawGrid(ctx,W,H,pad,yMin,yMax,xMin,xMax);
+
+  ctx.fillStyle=C.muted; ctx.font='9px monospace';
+  ctx.save(); ctx.rotate(-Math.PI/2); ctx.fillText('RTT (ms)',-(H/2+20),11); ctx.restore();
+  ctx.textAlign='center'; ctx.fillText('Tick',pad.left+cW/2,H-2); ctx.textAlign='left';
+
+  // Shaded min-max
+  ctx.beginPath(); let fp=true;
+  for (const t of ticks) { const d=e2eData[sim][t]; if (d.rtt_max==null){fp=true;continue;} const px=toCanvasX(t,xMin,xMax,pad.left,cW),py=toCanvasY(d.rtt_max,yMin,yMax,pad.top,cH); if(fp){ctx.moveTo(px,py);fp=false;}else ctx.lineTo(px,py); }
+  for (const t of [...ticks].reverse()) { const d=e2eData[sim][t]; if(d.rtt_min==null)continue; ctx.lineTo(toCanvasX(t,xMin,xMax,pad.left,cW),toCanvasY(d.rtt_min,yMin,yMax,pad.top,cH)); }
+  ctx.closePath(); ctx.fillStyle='#4fc3f7'; ctx.globalAlpha=0.12; ctx.fill(); ctx.globalAlpha=1;
+
+  ctx.strokeStyle='#4fc3f7'; ctx.lineWidth=1.8; ctx.globalAlpha=0.9;
+  let started=false; ctx.beginPath();
+  for (const t of ticks) { const v=e2eData[sim][t].rtt_avg; if(v==null){started=false;continue;} const px=toCanvasX(t,xMin,xMax,pad.left,cW),py=toCanvasY(v,yMin,yMax,pad.top,cH); if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py); }
+  ctx.stroke(); ctx.globalAlpha=1;
+
+  for (const t of ticks) { if(!e2eData[sim][t].reachable){const px=toCanvasX(t,xMin,xMax,pad.left,cW);ctx.fillStyle=C.red;ctx.globalAlpha=0.8;ctx.fillRect(px-1,pad.top,2,cH);ctx.globalAlpha=1;} }
+
+  const cx=toCanvasX(curTick,xMin,xMax,pad.left,cW);
+  ctx.strokeStyle=C.text; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(cx,pad.top); ctx.lineTo(cx,H-pad.bot); ctx.stroke(); ctx.setLineDash([]);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Predicted vs Actual delay (per selected link)
+// ══════════════════════════════════════════════════════════════════════════════
+function drawPredVsActual(sim, curTick) {
+  const canvas = document.getElementById('c-pred');
+  const W = canvas.getBoundingClientRect().width;
+  const H = +canvas.style.height.replace('px','') || 160;
   canvas.style.height = H + 'px';
   const ctx = resizeCanvas(canvas);
+  ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle = '#080d14';
-  ctx.fillRect(0, 0, W, H);
+  const {predData, tickData, predLinks} = STATE;
+  const selLink = document.getElementById('pred-link-select').value;
+  if (!selLink || !predLinks.length) return;
 
-  const pad  = 20;
-  const size = Math.min(W, H) - pad * 2;
-  const ox   = (W - size) / 2;
-  const oy   = (H - size) / 2;
-  const scale = size / (GRID + 30);
+  const ticks = Object.keys(tickData[sim]).map(Number).sort((a, b) => a - b);
+  if (!ticks.length) return;
 
-  function toScreen(gx, gy) {
-    return [ox + (gx + 15) * scale, oy + (GRID - gy + 15) * scale];
+  // Find matching actual CSV link for this topology link
+  const [sa, sb] = selLink.split('-');
+  let actualKey = null;
+  for (const cl of ALL_LINKS) {
+    const [ca, cb] = cl.split('-');
+    if ((ca === sa && cb === sb) || (ca === sb && cb === sa)) { actualKey = cl; break; }
   }
 
-  // Orbital shells
-  const shells = [{alt:5, col:'#ffd700', lbl:'L1'}, {alt:10, col:'#4fc3f7', lbl:'L2'}, {alt:15, col:'#ce93d8', lbl:'L3'}];
-  for (const {alt, col, lbl} of shells) {
-    const side = (PLANET_ROOT + alt) ** 2;
-    const half = side / 2;
-    const [sx, sy] = toScreen(CENTER - half, CENTER + half);
-    const sw = side * scale, sh = side * scale;
-    ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.55;
-    ctx.setLineDash([4,3]);
-    ctx.strokeRect(sx, sy, sw, sh);
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = col; ctx.font = '8px monospace';
-    ctx.fillText(lbl, sx + 3, sy + 12);
-  }
+  const pad = {top: 14, bot: 22, left: 52, right: 12};
+  const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bot;
+  const xMin = ticks[0], xMax = ticks[ticks.length - 1];
 
-  // Planet
-  const [pcx, pcy] = toScreen(CENTER, CENTER);
-  ctx.beginPath(); ctx.arc(pcx, pcy, 8, 0, Math.PI*2);
-  ctx.fillStyle = '#0d2137'; ctx.fill();
-  ctx.fillStyle = '#79c0ff'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('⊕', pcx, pcy + 4);
-  ctx.textAlign = 'left';
-
-  const positions = posData[sim]?.[curTick] || {};
-  const delays    = tickData[sim]?.[curTick] || {};
-
-  // Active links
-  for (const link of ALL_LINKS) {
-    if (delays[link] == null) continue;
-    const [a, b]   = link.split('-');
-    const sa = positions[a], sb = positions[b];
-    if (!sa || !sb) continue;
-    const [x1, y1] = toScreen(sa.x, sa.y);
-    const [x2, y2] = toScreen(sb.x, sb.y);
-    ctx.strokeStyle = LINK_COLOR[link]; ctx.lineWidth = 1.1;
-    ctx.globalAlpha = 0.45;
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  // Satellites
-  const MARKERS = {L1:'circle', L2:'triangle', L3:'diamond'};
-  for (const [sat, info] of Object.entries(positions)) {
-    const layer = SAT_LAYER[sat] || 'L1';
-    const col   = SAT_COLORS[layer];
-    const [sx, sy] = toScreen(info.x, info.y);
-    const r = 5;
-    ctx.fillStyle = col; ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    if (layer === 'L3') { // diamond
-      ctx.moveTo(sx, sy-r); ctx.lineTo(sx+r, sy); ctx.lineTo(sx, sy+r); ctx.lineTo(sx-r, sy);
-    } else if (layer === 'L2') { // triangle
-      ctx.moveTo(sx, sy-r); ctx.lineTo(sx+r*0.87, sy+r*0.5); ctx.lineTo(sx-r*0.87, sy+r*0.5);
-    } else { // circle
-      ctx.arc(sx, sy, r, 0, Math.PI*2);
+  // Compute y range from both series
+  let yMin = Infinity, yMax = -Infinity;
+  for (const t of ticks) {
+    const pv = predData[sim][t]?.[selLink];
+    if (pv != null) { yMin = Math.min(yMin, pv); yMax = Math.max(yMax, pv); }
+    if (actualKey) {
+      const av = tickData[sim][t]?.[actualKey];
+      if (av != null) { yMin = Math.min(yMin, av); yMax = Math.max(yMax, av); }
     }
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = col; ctx.font = '7px monospace';
-    ctx.fillText(sat, sx + r + 2, sy + 3);
   }
+  if (yMin === Infinity) {
+    ctx.fillStyle = C.muted; ctx.font = '10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('No prediction data for this link', W / 2, H / 2);
+    return;
+  }
+  const yP = (yMax - yMin) * 0.15 || 5; yMin -= yP; yMax += yP;
+
+  drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax);
+  ctx.fillStyle = C.muted; ctx.font = '9px monospace';
+  ctx.save(); ctx.rotate(-Math.PI / 2); ctx.fillText('Delay (ms)', -(H / 2 + 20), 11); ctx.restore();
+  ctx.textAlign = 'center'; ctx.fillText('Tick', pad.left + cW / 2, H - 2); ctx.textAlign = 'left';
+
+  // Actual delay line (solid)
+  if (actualKey) {
+    ctx.strokeStyle = C.accent; ctx.lineWidth = 2; ctx.setLineDash([]); ctx.globalAlpha = 0.9;
+    let started = false; ctx.beginPath();
+    for (const t of ticks) {
+      const v = tickData[sim][t]?.[actualKey];
+      if (v == null) { started = false; continue; }
+      const px = toCanvasX(t, xMin, xMax, pad.left, cW), py = toCanvasY(v, yMin, yMax, pad.top, cH);
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+    }
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  // Predicted delay line (dashed)
+  ctx.strokeStyle = C.orange; ctx.lineWidth = 2; ctx.setLineDash([6, 3]); ctx.globalAlpha = 0.9;
+  let started = false; ctx.beginPath();
+  for (const t of ticks) {
+    const v = predData[sim][t]?.[selLink];
+    if (v == null) { started = false; continue; }
+    const px = toCanvasX(t, xMin, xMax, pad.left, cW), py = toCanvasY(v, yMin, yMax, pad.top, cH);
+    if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+  }
+  ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+  // Error shading between the two lines
+  if (actualKey) {
+    ctx.beginPath(); let fp = true;
+    for (const t of ticks) {
+      const pv = predData[sim][t]?.[selLink], av = tickData[sim][t]?.[actualKey];
+      if (pv == null || av == null) { fp = true; continue; }
+      const px = toCanvasX(t, xMin, xMax, pad.left, cW);
+      const py1 = toCanvasY(pv, yMin, yMax, pad.top, cH);
+      const py2 = toCanvasY(av, yMin, yMax, pad.top, cH);
+      if (fp) { ctx.moveTo(px, py1); fp = false; } else ctx.lineTo(px, py1);
+    }
+    for (const t of [...ticks].reverse()) {
+      const pv = predData[sim][t]?.[selLink], av = tickData[sim][t]?.[actualKey];
+      if (pv == null || av == null) continue;
+      const px = toCanvasX(t, xMin, xMax, pad.left, cW);
+      ctx.lineTo(px, toCanvasY(av, yMin, yMax, pad.top, cH));
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#f85149'; ctx.globalAlpha = 0.08; ctx.fill(); ctx.globalAlpha = 1;
+  }
+
+  // Current tick line
+  const cx = toCanvasX(curTick, xMin, xMax, pad.left, cW);
+  ctx.strokeStyle = C.text; ctx.lineWidth = 1.4; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(cx, pad.top); ctx.lineTo(cx, H - pad.bot); ctx.stroke(); ctx.setLineDash([]);
 
   // Legend
-  ctx.font = '7px monospace';
-  const leItems = [{col:'#ffd700', lbl:'L1 (● 5km)'}, {col:'#4fc3f7', lbl:'L2 (▲ 10km)'}, {col:'#ce93d8', lbl:'L3 (◆ 15km)'}];
-  leItems.forEach(({col,lbl}, i) => {
-    ctx.fillStyle = col;
-    ctx.fillRect(8, H - 14 - i*12, 8, 6);
-    ctx.fillStyle = C.muted;
-    ctx.fillText(lbl, 19, H - 10 - i*12);
-  });
+  document.getElementById('legend-pred').innerHTML =
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.accent}"></div><span>Actual delay</span></div>` +
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.orange};border-top:1px dashed ${C.orange}"></div><span>ML predicted</span></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Prediction scatter plot (all links, all ticks)
+// ══════════════════════════════════════════════════════════════════════════════
+function drawScatter(sim) {
+  const canvas = document.getElementById('c-scatter');
+  const W = canvas.getBoundingClientRect().width;
+  const H = +canvas.style.height.replace('px','') || 160;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+  ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
+
+  const {predData, tickData, predLinks} = STATE;
+  const ticks = Object.keys(tickData[sim]).map(Number);
+
+  // Collect all (actual, predicted) pairs
+  const points = [];
+  for (const t of ticks) {
+    for (const pl of predLinks) {
+      const pv = predData[sim][t]?.[pl];
+      if (pv == null) continue;
+      // Find matching actual
+      const [sa, sb] = pl.split('-');
+      let av = null;
+      for (const cl of ALL_LINKS) {
+        const [ca, cb] = cl.split('-');
+        if ((ca===sa&&cb===sb)||(ca===sb&&cb===sa)) { av = tickData[sim][t]?.[cl]; break; }
+      }
+      if (av != null) points.push({actual: av, predicted: pv});
+    }
+  }
+
+  if (!points.length) {
+    ctx.fillStyle = C.muted; ctx.font = '10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('No data', W / 2, H / 2); return;
+  }
+
+  const pad = {top: 14, bot: 22, left: 44, right: 12};
+  const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bot;
+
+  const allVals = points.map(p => p.actual).concat(points.map(p => p.predicted));
+  let vMin = Math.min(...allVals), vMax = Math.max(...allVals);
+  const vP = (vMax - vMin) * 0.08 || 5; vMin -= vP; vMax += vP;
+
+  drawGrid(ctx, W, H, pad, vMin, vMax, vMin, vMax);
+  ctx.fillStyle = C.muted; ctx.font = '8px monospace';
+  ctx.save(); ctx.rotate(-Math.PI / 2); ctx.fillText('Predicted', -(H / 2 + 16), 9); ctx.restore();
+  ctx.textAlign = 'center'; ctx.fillText('Actual', pad.left + cW / 2, H - 2); ctx.textAlign = 'left';
+
+  // Perfect prediction line (45 degrees)
+  ctx.strokeStyle = C.green; ctx.lineWidth = 1; ctx.globalAlpha = 0.4; ctx.setLineDash([4, 3]);
+  const p1x = toCanvasX(vMin, vMin, vMax, pad.left, cW), p1y = toCanvasY(vMin, vMin, vMax, pad.top, cH);
+  const p2x = toCanvasX(vMax, vMin, vMax, pad.left, cW), p2y = toCanvasY(vMax, vMin, vMax, pad.top, cH);
+  ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+  // Points
+  for (const {actual, predicted} of points) {
+    const px = toCanvasX(actual, vMin, vMax, pad.left, cW);
+    const py = toCanvasY(predicted, vMin, vMax, pad.top, cH);
+    ctx.fillStyle = C.accent; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Metrics
+  const errors = points.map(p => p.predicted - p.actual);
+  const absErr = errors.map(Math.abs);
+  const maeV = absErr.reduce((a, b) => a + b, 0) / absErr.length;
+  const rmseV = Math.sqrt(errors.reduce((a, e) => a + e * e, 0) / errors.length);
+  const ssRes = errors.reduce((a, e) => a + e * e, 0);
+  const meanAct = points.reduce((a, p) => a + p.actual, 0) / points.length;
+  const ssTot = points.reduce((a, p) => a + (p.actual - meanAct) ** 2, 0);
+  const r2 = 1 - ssRes / (ssTot || 1);
+
+  document.getElementById('pred-metrics').innerHTML =
+    `MAE: <strong style="color:var(--text)">${maeV.toFixed(1)} ms</strong> &nbsp;|&nbsp; ` +
+    `RMSE: <strong style="color:var(--text)">${rmseV.toFixed(1)} ms</strong> &nbsp;|&nbsp; ` +
+    `R²: <strong style="color:${r2 > 0.8 ? 'var(--green)' : r2 > 0.5 ? 'var(--yellow)' : 'var(--red)'}">${r2.toFixed(3)}</strong>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAW: Path cost comparison (AI vs OSPF)
+// ══════════════════════════════════════════════════════════════════════════════
+function drawPathCost(sim, curTick) {
+  const canvas = document.getElementById('c-pathcost');
+  const W = canvas.getBoundingClientRect().width;
+  const H = +canvas.style.height.replace('px','') || 140;
+  canvas.style.height = H + 'px';
+  const ctx = resizeCanvas(canvas);
+  ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
+
+  const {pathData} = STATE;
+  const ticks = Object.keys(pathData[sim]).map(Number).sort((a, b) => a - b);
+  if (!ticks.length) return;
+
+  const pad = {top: 14, bot: 22, left: 52, right: 12};
+  const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bot;
+  const xMin = ticks[0], xMax = ticks[ticks.length - 1];
+
+  // Compute y range
+  let yMin = Infinity, yMax = -Infinity;
+  for (const t of ticks) {
+    const d = pathData[sim][t];
+    if (d.ai_cost != null)   { yMin = Math.min(yMin, d.ai_cost);   yMax = Math.max(yMax, d.ai_cost); }
+    if (d.ospf_cost != null) { yMin = Math.min(yMin, d.ospf_cost); yMax = Math.max(yMax, d.ospf_cost); }
+  }
+  if (yMin === Infinity) {
+    ctx.fillStyle = C.muted; ctx.font = '10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('No path data', W / 2, H / 2); return;
+  }
+  const yP = (yMax - yMin) * 0.15 || 10; yMin = Math.max(0, yMin - yP); yMax += yP;
+
+  drawGrid(ctx, W, H, pad, yMin, yMax, xMin, xMax);
+  ctx.fillStyle = C.muted; ctx.font = '9px monospace';
+  ctx.save(); ctx.rotate(-Math.PI / 2); ctx.fillText('Cost (ms)', -(H / 2 + 20), 11); ctx.restore();
+  ctx.textAlign = 'center'; ctx.fillText('Tick', pad.left + cW / 2, H - 2); ctx.textAlign = 'left';
+
+  // AI cost line
+  ctx.strokeStyle = C.orange; ctx.lineWidth = 2; ctx.setLineDash([]); ctx.globalAlpha = 0.9;
+  let started = false; ctx.beginPath();
+  for (const t of ticks) {
+    const v = pathData[sim][t].ai_cost;
+    if (v == null) { started = false; continue; }
+    const px = toCanvasX(t, xMin, xMax, pad.left, cW), py = toCanvasY(v, yMin, yMax, pad.top, cH);
+    if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+  }
+  ctx.stroke(); ctx.globalAlpha = 1;
+
+  // OSPF cost line
+  ctx.strokeStyle = C.accent; ctx.lineWidth = 2; ctx.setLineDash([]);
+  ctx.globalAlpha = 0.9; started = false; ctx.beginPath();
+  for (const t of ticks) {
+    const v = pathData[sim][t].ospf_cost;
+    if (v == null) { started = false; continue; }
+    const px = toCanvasX(t, xMin, xMax, pad.left, cW), py = toCanvasY(v, yMin, yMax, pad.top, cH);
+    if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+  }
+  ctx.stroke(); ctx.globalAlpha = 1;
+
+  // Shade areas where AI is better (green) or worse (red)
+  for (const t of ticks) {
+    const d = pathData[sim][t];
+    if (d.ai_cost == null || d.ospf_cost == null) continue;
+    const px = toCanvasX(t, xMin, xMax, pad.left, cW);
+    const py1 = toCanvasY(d.ai_cost, yMin, yMax, pad.top, cH);
+    const py2 = toCanvasY(d.ospf_cost, yMin, yMax, pad.top, cH);
+    const barW = Math.max(2, cW / ticks.length * 0.7);
+    if (d.ai_cost < d.ospf_cost) {
+      ctx.fillStyle = C.green; ctx.globalAlpha = 0.15;
+      ctx.fillRect(px - barW / 2, Math.min(py1, py2), barW, Math.abs(py2 - py1));
+    } else if (d.ai_cost > d.ospf_cost) {
+      ctx.fillStyle = C.red; ctx.globalAlpha = 0.15;
+      ctx.fillRect(px - barW / 2, Math.min(py1, py2), barW, Math.abs(py2 - py1));
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Current tick line
+  const cx = toCanvasX(curTick, xMin, xMax, pad.left, cW);
+  ctx.strokeStyle = C.text; ctx.lineWidth = 1.4; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(cx, pad.top); ctx.lineTo(cx, H - pad.bot); ctx.stroke(); ctx.setLineDash([]);
+
+  document.getElementById('legend-path').innerHTML =
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.orange}"></div><span>AI path cost</span></div>` +
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.accent}"></div><span>OSPF path cost</span></div>` +
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.green};opacity:0.5"></div><span>AI better</span></div>` +
+    `<div class="legend-item"><div class="legend-swatch" style="background:${C.red};opacity:0.5"></div><span>OSPF better</span></div>`;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -702,43 +1051,118 @@ function drawMap(sim, posData, tickData, curTick) {
 // ══════════════════════════════════════════════════════════════════════════════
 let STATE = null;
 
-function getCurrentSim() {
-  return parseInt(document.getElementById('sim-select').value, 10);
-}
+function getCurrentSim() { return parseInt(document.getElementById('sim-select').value, 10); }
 
 function updateKPIs(sim, tick) {
-  const { tickData, timeData } = STATE;
-  const delays  = tickData[sim][tick];
-  const active  = Object.values(delays).filter(d => d != null);
-  const avg     = active.length ? (active.reduce((a,b)=>a+b,0)/active.length).toFixed(1) : '—';
-  const time_s  = timeData[sim][tick];
-  const n       = STATE.simNums.length;
-  const idx     = STATE.simNums.indexOf(sim) + 1;
+  const {tickData, timeData, e2eData} = STATE;
+  const delays = tickData[sim][tick];
+  const active = Object.values(delays).filter(d => d != null);
+  const avg    = active.length ? (active.reduce((a,b)=>a+b,0)/active.length).toFixed(1) : '—';
+  const time_s = timeData[sim][tick];
+  const n      = STATE.simNums.length;
+  const idx    = STATE.simNums.indexOf(sim) + 1;
+  const e2e    = e2eData[sim]?.[tick];
 
   document.getElementById('v-sim').textContent   = `#${sim}`;
-  document.getElementById('u-sim').textContent   = `${idx} of ${n} run${n !== 1?'s':''}`;
+  document.getElementById('u-sim').textContent   = `${idx} of ${n} run${n!==1?'s':''}`;
   document.getElementById('v-tick').textContent  = tick;
   document.getElementById('u-tick').textContent  = `time = ${time_s.toFixed(0)} s`;
   document.getElementById('v-links').textContent = `${active.length} / ${ALL_LINKS.length}`;
   document.getElementById('v-delay').textContent = avg;
 
-  const linkCard = document.getElementById('kpi-links');
-  const col = active.length >= 6 ? 'var(--green)' : active.length >= 3 ? 'var(--yellow)' : 'var(--red)';
-  linkCard.style.borderTopColor = col;
-  document.getElementById('v-links').style.color = col;
+  if (e2e) {
+    document.getElementById('v-rtt').textContent  = e2e.rtt_avg != null ? e2e.rtt_avg.toFixed(0) : '—';
+    document.getElementById('u-rtt').textContent  = e2e.reachable ? `hops: ${e2e.hop_count??'?'}` : 'unreachable';
+    document.getElementById('v-loss').textContent = e2e.packet_loss != null ? e2e.packet_loss.toFixed(1) : '—';
+
+    const lossColor = !e2e.reachable ? 'var(--red)' : (e2e.packet_loss??0)>0 ? 'var(--yellow)' : 'var(--green)';
+    document.getElementById('kpi-loss').style.borderTopColor = lossColor;
+    document.getElementById('v-loss').style.color = lossColor;
+    const rttColor = !e2e.reachable ? 'var(--red)' : 'var(--lblue)';
+    document.getElementById('kpi-rtt').style.borderTopColor = rttColor;
+    document.getElementById('v-rtt').style.color = rttColor;
+
+    const pathEl = document.getElementById('e2e-path-display');
+    if (e2e.path) {
+      pathEl.innerHTML = e2e.path.split('|').map(h=>`<span>${h}</span>`).join(' → ');
+    } else {
+      pathEl.textContent = e2e.reachable ? '(no path data)' : '— unreachable —';
+    }
+    document.getElementById('e2e-rtt-min').textContent  = e2e.rtt_min  != null ? e2e.rtt_min.toFixed(1) : '—';
+    document.getElementById('e2e-rtt-max').textContent  = e2e.rtt_max  != null ? e2e.rtt_max.toFixed(1) : '—';
+    document.getElementById('e2e-rtt-mdev').textContent = e2e.rtt_mdev != null ? e2e.rtt_mdev.toFixed(1) : '—';
+    document.getElementById('e2e-hops').textContent     = e2e.hop_count != null ? e2e.hop_count : '—';
+  }
+
+  const linkCol = active.length >= 6 ? 'var(--green)' : active.length >= 3 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('kpi-links').style.borderTopColor = linkCol;
+  document.getElementById('v-links').style.color = linkCol;
+}
+
+function updateAISection(sim, tick) {
+  if (!STATE.hasPredictions) return;
+
+  const pd = STATE.pathData[sim]?.[tick];
+  if (pd) {
+    document.getElementById('ai-path-route').textContent  = pd.ai_path   || '—';
+    document.getElementById('ai-path-cost').textContent   = pd.ai_cost   != null ? pd.ai_cost.toFixed(1) : '—';
+    document.getElementById('ospf-path-route').textContent = pd.ospf_path || '—';
+    document.getElementById('ospf-path-cost').textContent  = pd.ospf_cost != null ? pd.ospf_cost.toFixed(1) : '—';
+
+    // Color the cost values
+    const aiEl   = document.getElementById('ai-path-cost');
+    const ospfEl = document.getElementById('ospf-path-cost');
+    if (pd.ai_cost != null && pd.ospf_cost != null) {
+      if (pd.ai_cost < pd.ospf_cost)      { aiEl.style.color = 'var(--green)'; ospfEl.style.color = 'var(--red)'; }
+      else if (pd.ai_cost > pd.ospf_cost)  { aiEl.style.color = 'var(--red)';   ospfEl.style.color = 'var(--green)'; }
+      else                                  { aiEl.style.color = 'var(--text)';  ospfEl.style.color = 'var(--text)'; }
+    } else {
+      aiEl.style.color = 'var(--text)'; ospfEl.style.color = 'var(--text)';
+    }
+  }
+
+  // Summary stats for this simulation
+  const ticks = Object.keys(STATE.pathData[sim]).map(Number);
+  let aiWins = 0, ospfWins = 0, ties = 0, totalSavings = 0, count = 0;
+  for (const t of ticks) {
+    const d = STATE.pathData[sim][t];
+    if (d.ai_cost != null && d.ospf_cost != null) {
+      count++;
+      if (d.ai_cost < d.ospf_cost) aiWins++;
+      else if (d.ai_cost > d.ospf_cost) ospfWins++;
+      else ties++;
+      totalSavings += d.ospf_cost - d.ai_cost;
+    }
+  }
+  document.getElementById('stat-ai-wins').textContent   = aiWins;
+  document.getElementById('stat-ospf-wins').textContent = ospfWins;
+  document.getElementById('stat-ties').textContent      = ties;
+  const avgSav = count > 0 ? (totalSavings / count).toFixed(1) : '—';
+  const savEl  = document.getElementById('stat-savings');
+  savEl.textContent = count > 0 ? `${avgSav} ms` : '—';
+  savEl.style.color = totalSavings > 0 ? 'var(--green)' : totalSavings < 0 ? 'var(--red)' : 'var(--text)';
 }
 
 function renderAll() {
   if (!STATE) return;
   const sim  = getCurrentSim();
   const tick = parseInt(document.getElementById('tick-slider').value, 10);
-  document.getElementById('tick-label').textContent = `Tick ${tick}  (${STATE.timeData[sim][tick]?.toFixed(0) ?? '?'} s)`;
+  document.getElementById('tick-label').textContent =
+    `Tick ${tick}  (${STATE.timeData[sim][tick]?.toFixed(0) ?? '?'} s)`;
 
   updateKPIs(sim, tick);
-  drawLine    (sim, STATE.tickData, STATE.posData, STATE.timeData, tick);
+  drawLine    (sim, STATE.tickData, tick);
   drawBar     (sim, STATE.tickData);
   drawTimeline(sim, STATE.tickData, tick);
   drawMap     (sim, STATE.posData, STATE.tickData, tick);
+  drawRTT     (sim, STATE.e2eData, tick);
+
+  if (STATE.hasPredictions) {
+    drawPredVsActual(sim, tick);
+    drawScatter(sim);
+    drawPathCost(sim, tick);
+    updateAISection(sim, tick);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -751,31 +1175,42 @@ document.getElementById('file-input').addEventListener('change', e => {
   reader.onload = ev => {
     const rows = parseCSV(ev.target.result);
     const data = buildData(rows);
+    if (!data) { alert('Could not parse CSV — check the file format.'); return; }
     STATE = data;
 
-    // populate sim selector
     const sel = document.getElementById('sim-select');
     sel.innerHTML = data.simNums.map(s => `<option value="${s}">Run #${s}</option>`).join('');
 
-    // setup slider
-    const ticks = Object.keys(data.tickData[data.simNums[0]]).map(Number).sort((a,b)=>a-b);
+    const ticks  = Object.keys(data.tickData[data.simNums[0]]).map(Number).sort((a, b) => a - b);
     const slider = document.getElementById('tick-slider');
-    slider.min = ticks[0]; slider.max = ticks[ticks.length-1]; slider.value = ticks[0];
+    slider.min = ticks[0]; slider.max = ticks[ticks.length - 1]; slider.value = ticks[0];
+
+    // Show/hide AI section
+    const aiSec = document.getElementById('ai-section');
+    if (data.hasPredictions) {
+      aiSec.classList.add('visible');
+      // Populate link selector
+      const linkSel = document.getElementById('pred-link-select');
+      linkSel.innerHTML = data.predLinks.map(l => `<option value="${l}">${l}</option>`).join('');
+      linkSel.addEventListener('change', renderAll);
+    } else {
+      aiSec.classList.remove('visible');
+    }
 
     document.getElementById('load-banner').style.display = 'none';
     document.getElementById('dashboard').style.display   = 'block';
 
-    setTimeout(renderAll, 50); // let layout settle before measuring canvas
+    setTimeout(renderAll, 50);
   };
   reader.readAsText(file);
 });
 
 document.getElementById('tick-slider').addEventListener('input', renderAll);
 document.getElementById('sim-select').addEventListener('change', () => {
-  const sim   = getCurrentSim();
-  const ticks = Object.keys(STATE.tickData[sim]).map(Number).sort((a,b)=>a-b);
+  const sim    = getCurrentSim();
+  const ticks  = Object.keys(STATE.tickData[sim]).map(Number).sort((a, b) => a - b);
   const slider = document.getElementById('tick-slider');
-  slider.min = ticks[0]; slider.max = ticks[ticks.length-1]; slider.value = ticks[0];
+  slider.min = ticks[0]; slider.max = ticks[ticks.length - 1]; slider.value = ticks[0];
   renderAll();
 });
 

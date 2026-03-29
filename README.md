@@ -341,7 +341,7 @@ python3 ntn_dashboard.py --cli --sim 1 --tick 3
 
 # Open the full interactive GUI (matplotlib)
 
-## python3 ntn_dashboard.py
+python3 ntn_dashboard.py
 
 ## End-to-End Workflow
 
